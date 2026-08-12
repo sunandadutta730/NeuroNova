@@ -198,8 +198,9 @@ async function handleBankRegistrationSubmit(e) {
   const lat = parseFloat(document.getElementById('bank-reg-lat').value) || 19.0760;
   const lng = parseFloat(document.getElementById('bank-reg-lng').value) || 72.8777;
 
+  const bankId = `BANK-${Date.now().toString().slice(-4)}`;
   const newBankDoc = {
-    id: `BANK-${Date.now().toString().slice(-4)}`,
+    id: bankId,
     name: name,
     parentHospital: hospital,
     category: category,
@@ -209,7 +210,6 @@ async function handleBankRegistrationSubmit(e) {
     contactPerson: contactName,
     phone: phone,
     email: email,
-    password: password,
     state: state,
     district: district,
     city: city,
@@ -223,17 +223,42 @@ async function handleBankRegistrationSubmit(e) {
     bloods: { 'O+': 40, 'A+': 30, 'B+': 25, 'AB+': 15, 'O-': 5, 'A-': 3, 'B-': 1, 'AB-': 1 }
   };
 
-  // Save to Firestore bloodBanks collection
+  // 1. Create user in Firebase Auth if available
+  if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length && firebase.auth) {
+    try {
+      const userCred = await firebase.auth().createUserWithEmailAndPassword(email, password);
+      newBankDoc.uid = userCred.user.uid;
+    } catch (authErr) {
+      if (authErr.code === 'auth/email-already-in-use') {
+        console.warn('Bank email already registered in Firebase Auth, proceeding to update profile.');
+      } else {
+        console.warn('Bank Auth signup notice:', authErr.message);
+      }
+    }
+  }
+
+  // 2. Save to Firestore bloodBanks collection
   if (typeof db !== 'undefined' && db) {
     try {
       await db.collection('bloodBanks').doc(newBankDoc.id).set(newBankDoc);
       console.log('✅ Registered blood bank saved to bloodBanks collection in Firestore');
+
+      // Also create a profile in users collection for role tracking
+      await db.collection('users').doc(newBankDoc.uid || newBankDoc.id).set({
+        id: newBankDoc.id,
+        name: name,
+        email: email,
+        phone: phone,
+        role: 'blood_bank',
+        city: city,
+        createdAt: new Date().toISOString()
+      });
     } catch (err) {
       console.error('Firestore save error:', err);
     }
   }
 
-  // Set session
+  // 3. Set session
   currentBloodBankSession = newBankDoc;
   localStorage.setItem('lifelink_bank_session', JSON.stringify(newBankDoc));
 
@@ -249,9 +274,18 @@ async function handleBankLoginSubmit(e) {
   const email = document.getElementById('bank-login-email').value.trim().toLowerCase();
   const password = document.getElementById('bank-login-password').value;
 
+  // 1. Firebase Auth Attempt
+  if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length && firebase.auth) {
+    try {
+      await firebase.auth().signInWithEmailAndPassword(email, password);
+    } catch (authErr) {
+      console.warn('Bank Firebase Auth signin notice:', authErr.message);
+    }
+  }
+
   let foundBank = null;
 
-  // Search Firestore bloodBanks list
+  // Search Firestore BLOOD_BANKS list
   if (typeof BLOOD_BANKS !== 'undefined' && BLOOD_BANKS.length > 0) {
     foundBank = BLOOD_BANKS.find(b => b.email && b.email.toLowerCase() === email);
   }
@@ -268,7 +302,7 @@ async function handleBankLoginSubmit(e) {
     }
   }
 
-  // Fallback demo matching for instant portal testing
+  // Fallback demo matching for initial testing if bank list loaded
   if (!foundBank && (email.includes('apollo') || email.includes('admin') || password === 'bank123')) {
     foundBank = (BLOOD_BANKS && BLOOD_BANKS[0]) || {
       id: 'BANK-002',

@@ -187,7 +187,7 @@ function completeUserSignup(name, email, phone, password, role) {
 
   saveAccountToLocalStore(userAccount);
 
-  if (typeof firebase !== 'undefined' && firebase.apps.length && firebase.auth) {
+  if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length && firebase.auth) {
     firebase.auth().createUserWithEmailAndPassword(email, password)
       .then((userCredential) => {
         userAccount.uid = userCredential.user.uid;
@@ -196,8 +196,18 @@ function completeUserSignup(name, email, phone, password, role) {
       })
       .catch((err) => {
         if (err.code === 'auth/email-already-in-use') {
-          showToast('⚠️ This email is already registered. Please log in.', 'error');
+          showToast('⚠️ This email is already registered in Firebase. Logging in...', 'info');
+          // Attempt login with provided credentials
+          firebase.auth().signInWithEmailAndPassword(email, password)
+            .then((userCredential) => {
+              userAccount.uid = userCredential.user.uid;
+              completeLoginProcess(userAccount, role);
+            })
+            .catch(() => {
+              showToast('❌ Email already in use by another account.', 'error');
+            });
         } else {
+          console.warn('Firebase createUser error:', err.message);
           completeLoginProcess(userAccount, role);
           saveUserAccountToFirebase(userAccount);
         }
@@ -238,7 +248,7 @@ function handleAuthLogin(e, role) {
   }
 
   // 1. Firebase Auth Attempt
-  if (typeof firebase !== 'undefined' && firebase.apps.length && firebase.auth) {
+  if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length && firebase.auth) {
     firebase.auth().signInWithEmailAndPassword(email, password)
       .then((userCredential) => {
         const fbUser = userCredential.user;
@@ -248,12 +258,16 @@ function handleAuthLogin(e, role) {
           email: fbUser.email,
           role: 'donor'
         };
+        localAcc.uid = fbUser.uid;
         completeLoginProcess(localAcc, 'user');
       })
       .catch((err) => {
         if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
           showToast('❌ Invalid email or wrong password. Access denied.', 'error');
+        } else if (err.code === 'auth/user-not-found') {
+          showToast('❌ Account not found. Please Sign Up.', 'error');
         } else {
+          console.warn('Firebase sign-in notice:', err.message);
           handleLocalLoginFallback(email, password);
         }
       });
@@ -300,8 +314,16 @@ function completeLoginProcess(accountObj, role) {
 }
 
 function handleGoogleAuth() {
-  if (typeof firebase !== 'undefined' && firebase.apps.length && firebase.auth) {
+  // Ensure Firebase is initialized
+  if (typeof firebase !== 'undefined' && (!firebase.apps || !firebase.apps.length) && typeof initFirebaseBackend === 'function') {
+    initFirebaseBackend();
+  }
+
+  if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length && firebase.auth) {
     const provider = new firebase.auth.GoogleAuthProvider();
+    provider.addScope('email');
+    provider.addScope('profile');
+
     firebase.auth().signInWithPopup(provider)
       .then((result) => {
         const user = result.user;
@@ -320,11 +342,17 @@ function handleGoogleAuth() {
         saveUserAccountToFirebase(googleAccount);
       })
       .catch((error) => {
-        console.error('Google Auth Popup error:', error.message);
-        showToast(`❌ Google Sign-In failed: ${error.message}`, 'error');
+        console.error('Google Auth Popup error:', error.code, error.message);
+        if (error.code === 'auth/popup-closed-by-user') {
+          showToast('ℹ️ Sign-in popup closed before completion.', 'info');
+        } else if (error.code === 'auth/unauthorized-domain') {
+          showToast('⚠️ Domain not authorized in Firebase Console.', 'error');
+        } else {
+          showToast(`❌ Google Sign-In: ${error.message}`, 'error');
+        }
       });
   } else {
-    showToast('⚡ Google Auth requires live Firebase connection.', 'info');
+    showToast('⚡ Firebase authentication services are initializing. Please try again in a moment.', 'info');
   }
 }
 
@@ -334,7 +362,7 @@ function handleUserLogout() {
   localStorage.removeItem('lifelink_current_user');
   localStorage.removeItem('lifelink_admin_logged_in');
 
-  if (typeof firebase !== 'undefined' && firebase.apps.length && firebase.auth) {
+  if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length && firebase.auth) {
     firebase.auth().signOut().catch(() => { });
   }
 

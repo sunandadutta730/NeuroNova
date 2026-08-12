@@ -7,111 +7,123 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function isAdmin() {
-      return isAuthenticated() && (request.auth.token.role == 'admin' || request.auth.token.admin == true);
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
     }
 
-    function isBloodBank() {
-      return isAuthenticated() && (request.auth.token.role == 'blood_bank' || request.auth.token.role == 'bank');
-    }
-
-    // 1. users
+    // 1. users: Allow public read and registration; write if owner or authenticated
     match /users/{userId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if isAuthenticated();
     }
 
-    // 2. donors
+    // 2. donors: Public read for emergency matching; create for registration; update if authenticated or valid payload
     match /donors/{donorId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if isAuthenticated() || request.resource.data.keys().hasAll(['name', 'phone', 'blood']);
     }
 
     // 3. receivers
     match /receivers/{receiverId} {
-      allow read, write: if true;
+      allow read, create: if true;
+      allow update, delete: if isAuthenticated();
     }
 
-    // 4. bloodBanks
+    // 4. bloodBanks: Public read for network directory; write for registration and updates
     match /bloodBanks/{bankId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if isAuthenticated() || request.resource.data.keys().hasAll(['name', 'licenseNumber']);
     }
 
-    // 5. bloodInventory
+    // 5. bloodInventory: Public read for stock matrix; create/update for inventory adjustments
     match /bloodInventory/{inventoryId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if isAuthenticated();
     }
 
-    // 6. bloodRequests
+    // 6. bloodRequests: Public read & create for emergency requests; update for acceptance/confirmation steps
     match /bloodRequests/{requestId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create: if true;
+      allow update: if true;
+      allow delete: if isAuthenticated();
     }
 
     // 7. dispatches
     match /dispatches/{dispatchId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if isAuthenticated();
     }
 
-    // 8. notifications
+    // 8. notifications: Public read & create for broadcast alerts
     match /notifications/{notificationId} {
-      allow read, write: if true;
+      allow read, create: if true;
+      allow update, delete: if isAuthenticated();
     }
 
     // 9. donations
     match /donations/{donationId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if isAuthenticated();
     }
 
     // 10. contractDonors
     match /contractDonors/{donorId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if isAuthenticated();
     }
 
     // 11. ngoPartners
     match /ngoPartners/{partnerId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if isAuthenticated();
     }
 
     // 12. bloodCollectionCamps
     match /bloodCollectionCamps/{campId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if isAuthenticated();
     }
 
     // 13. bloodBankStaff
     match /bloodBankStaff/{staffId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if isAuthenticated();
     }
 
-    // 14. activityLogs
+    // 14. activityLogs: Write for audit trail
     match /activityLogs/{logId} {
-      allow read, write: if true;
+      allow read, create: if true;
+      allow update, delete: if isAuthenticated();
     }
 
     // 15. reports
     match /reports/{reportId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if isAuthenticated();
     }
 
     // 16. settings
     match /settings/{settingId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create, update, delete: if isAuthenticated();
     }
 
     // 17. moneyDonations
     match /moneyDonations/{donationId} {
-      allow read, write: if true;
-    }
-
-    // Legacy collections fallback
-    match /admins/{adminId} {
-      allow read, write: if true;
-    }
-    match /emergency/{reqId} {
-      allow read, write: if true;
-    }
-    match /logins/{loginId} {
-      allow read, write: if true;
-    }
-    match /blood_banks/{bankId} {
-      allow read, write: if true;
+      allow read, create: if true;
+      allow update, delete: if isAuthenticated();
     }
   }
 }

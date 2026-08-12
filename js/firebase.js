@@ -2,6 +2,7 @@
 
 let db = null;
 let isFirebaseConnected = false;
+window.firebaseReadyState = 'LOADING';
 
 // Centralized In-Memory Firestore Collection Caches
 let allUsersList = [];
@@ -27,152 +28,167 @@ function initFirebaseBackend() {
     try {
       if (!firebase.apps.length) {
         const config = window.firebaseConfig;
-        if (config) {
+        if (config && config.apiKey && config.projectId) {
           firebase.initializeApp(config);
+          console.log('✅ Firebase SDK initialized successfully for project:', config.projectId);
         } else {
-          console.warn('Firebase configuration missing!');
+          console.warn('⚠️ Firebase configuration missing or invalid!');
+          window.firebaseReadyState = 'UNAVAILABLE';
+          return;
         }
       }
+      
       db = firebase.firestore();
+      isFirebaseConnected = true;
+      window.firebaseReadyState = 'CONNECTED';
+      updateCloudStatusBadge();
 
       // 1. users collection listener
       db.collection('users').onSnapshot((snapshot) => {
-        if (!snapshot.empty) {
-          allUsersList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        }
-      }, () => {});
+        allUsersList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        if (typeof renderPage === 'function') renderPage();
+      }, (err) => {
+        console.warn('users snapshot listener error:', err.message);
+      });
 
       // 2. donors collection listener
       db.collection('donors').onSnapshot((snapshot) => {
-        if (!snapshot.empty) {
-          registeredDonors = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          isFirebaseConnected = true;
-          updateCloudStatusBadge();
-          if (typeof renderPage === 'function') renderPage();
-        } else {
-          seedInitialFirestoreData();
-        }
-      }, (err) => {
-        console.warn('Firebase listener notice:', err.message);
-        isFirebaseConnected = false;
+        registeredDonors = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        isFirebaseConnected = true;
+        window.firebaseReadyState = 'CONNECTED';
         updateCloudStatusBadge();
+        if (typeof renderPage === 'function') renderPage();
+      }, (err) => {
+        console.warn('donors snapshot listener error:', err.message);
       });
 
       // 3. receivers collection listener
       db.collection('receivers').onSnapshot((snapshot) => {
-        if (!snapshot.empty) {
-          receiversList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        }
-      }, () => {});
+        receiversList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      }, (err) => {
+        console.warn('receivers snapshot listener error:', err.message);
+      });
 
       // 4. bloodBanks collection listener
       db.collection('bloodBanks').onSnapshot((snapshot) => {
-        if (!snapshot.empty) {
-          BLOOD_BANKS = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          if (typeof renderPage === 'function') renderPage();
-        }
-      }, () => {});
+        BLOOD_BANKS = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        if (typeof renderPage === 'function') renderPage();
+      }, (err) => {
+        console.warn('bloodBanks snapshot listener error:', err.message);
+      });
 
       // 5. bloodInventory collection listener
       db.collection('bloodInventory').onSnapshot((snapshot) => {
-        if (!snapshot.empty) {
-          bloodInventoryList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          if (typeof renderPage === 'function') renderPage();
-        }
-      }, () => {});
+        bloodInventoryList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        if (typeof renderPage === 'function') renderPage();
+      }, (err) => {
+        console.warn('bloodInventory snapshot listener error:', err.message);
+      });
 
       // 6. bloodRequests collection listener
       db.collection('bloodRequests').onSnapshot((snapshot) => {
-        if (!snapshot.empty) {
-          emergencyRequestsList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          if (typeof renderPage === 'function') renderPage();
-        }
-      }, () => {});
+        emergencyRequestsList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        if (typeof renderPage === 'function') renderPage();
+      }, (err) => {
+        console.warn('bloodRequests snapshot listener error:', err.message);
+      });
 
       // 7. dispatches collection listener
       db.collection('dispatches').onSnapshot((snapshot) => {
-        if (!snapshot.empty) {
-          dispatchesList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        }
-      }, () => {});
+        dispatchesList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        if (typeof renderPage === 'function') renderPage();
+      }, (err) => {
+        console.warn('dispatches snapshot listener error:', err.message);
+      });
 
       // 8. notifications collection listener
       db.collection('notifications').onSnapshot((snapshot) => {
-        if (!snapshot.empty) {
-          notificationsList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        }
-      }, () => {});
+        notificationsList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        if (typeof renderPage === 'function') renderPage();
+      }, (err) => {
+        console.warn('notifications snapshot listener error:', err.message);
+      });
 
       // 9. donations collection listener
       db.collection('donations').onSnapshot((snapshot) => {
-        if (!snapshot.empty) {
-          donationsList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        }
-      }, () => {});
+        donationsList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      }, (err) => {
+        console.warn('donations snapshot listener error:', err.message);
+      });
 
       // 10. contractDonors collection listener
       db.collection('contractDonors').onSnapshot((snapshot) => {
-        if (!snapshot.empty) {
-          contractDonorsList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        }
-      }, () => {});
+        contractDonorsList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      }, (err) => {
+        console.warn('contractDonors snapshot listener error:', err.message);
+      });
 
       // 11. ngoPartners collection listener
       db.collection('ngoPartners').onSnapshot((snapshot) => {
-        if (!snapshot.empty) {
-          ngoPartnersList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        }
-      }, () => {});
+        ngoPartnersList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      }, (err) => {
+        console.warn('ngoPartners snapshot listener error:', err.message);
+      });
 
       // 12. bloodCollectionCamps collection listener
       db.collection('bloodCollectionCamps').onSnapshot((snapshot) => {
-        if (!snapshot.empty) {
-          bloodCollectionCampsList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        }
-      }, () => {});
+        bloodCollectionCampsList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      }, (err) => {
+        console.warn('bloodCollectionCamps snapshot listener error:', err.message);
+      });
 
       // 13. bloodBankStaff collection listener
       db.collection('bloodBankStaff').onSnapshot((snapshot) => {
-        if (!snapshot.empty) {
-          bloodBankStaffList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        }
-      }, () => {});
+        bloodBankStaffList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      }, (err) => {
+        console.warn('bloodBankStaff snapshot listener error:', err.message);
+      });
 
       // 14. activityLogs collection listener
       db.collection('activityLogs').onSnapshot((snapshot) => {
-        if (!snapshot.empty) {
-          activityLogsList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        }
-      }, () => {});
+        activityLogsList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      }, (err) => {
+        console.warn('activityLogs snapshot listener error:', err.message);
+      });
 
       // 15. reports collection listener
       db.collection('reports').onSnapshot((snapshot) => {
-        if (!snapshot.empty) {
-          reportsList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        }
-      }, () => {});
+        reportsList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      }, (err) => {
+        console.warn('reports snapshot listener error:', err.message);
+      });
 
       // 16. settings collection listener
       db.collection('settings').onSnapshot((snapshot) => {
         if (!snapshot.empty) {
           systemSettings = snapshot.docs[0].data();
         }
-      }, () => {});
+      }, (err) => {
+        console.warn('settings snapshot listener error:', err.message);
+      });
 
       // 17. moneyDonations collection listener
       db.collection('moneyDonations').onSnapshot((snapshot) => {
-        if (!snapshot.empty) {
-          moneyDonationsList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          if (typeof renderPage === 'function') renderPage();
-        }
-      }, () => {});
+        moneyDonationsList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        if (typeof renderPage === 'function') renderPage();
+      }, (err) => {
+        console.warn('moneyDonations snapshot listener error:', err.message);
+      });
 
     } catch (e) {
       console.warn('Firebase connection notice:', e.message);
       isFirebaseConnected = false;
+      window.firebaseReadyState = 'FAILED';
       updateCloudStatusBadge();
     }
+  } else {
+    window.firebaseReadyState = 'UNAVAILABLE';
   }
+}
+
+// Immediately attempt initialization on script parse if firebase is defined
+if (typeof firebase !== 'undefined' && window.firebaseConfig) {
+  initFirebaseBackend();
 }
 
 // Helper to delete all documents in a collection

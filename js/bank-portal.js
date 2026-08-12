@@ -366,6 +366,9 @@ async function acceptEmergencyRequestByBank(reqId) {
   const NOW = new Date().toISOString();
   req.status = 'ACCEPTED';
   req.acceptedBy = { bankId: bank.id, bankName: bank.name, acceptedTime: NOW };
+  req.acceptedBankId = bank.id;
+  req.acceptedBankName = bank.name;
+  req.acceptedAt = NOW;
   req.progressTimeline = req.progressTimeline || [];
   req.progressTimeline.push({ step: `Accepted by ${bank.name}`, time: NOW });
 
@@ -389,6 +392,7 @@ async function dispatchBloodUnitsModal(reqId) {
 
   const NOW = new Date().toISOString();
   req.dispatchStatus = 'DISPATCHED';
+  req.deliveryStatus = 'IN_TRANSIT';
   req.progressTimeline = req.progressTimeline || [];
   req.progressTimeline.push({ step: `Blood Dispatched (Driver: ${driverName})`, time: NOW });
 
@@ -397,7 +401,7 @@ async function dispatchBloodUnitsModal(reqId) {
       await db.collection('bloodRequests').doc(reqId).update(req);
       await db.collection('dispatches').add({
         requestId: reqId,
-        bankId: currentBloodBankSession.id,
+        bankId: currentBloodBankSession ? currentBloodBankSession.id : (req.acceptedBankId || 'BANK-001'),
         driverName: driverName,
         status: 'IN_TRANSIT',
         dispatchedAt: NOW
@@ -417,16 +421,20 @@ async function confirmBloodBankDelivery(reqId) {
 
   const NOW = new Date().toISOString();
   req.bankConfirmed = true;
+  req.bloodBankDelivered = true;
+  req.deliveryStatus = 'DELIVERED_BY_BANK';
   req.progressTimeline = req.progressTimeline || [];
   req.progressTimeline.push({ step: `Blood Bank Confirmed Delivery`, time: NOW });
 
   if (req.patientConfirmed) {
     req.status = 'COMPLETED';
+    req.completedAt = NOW;
+    req.deliveryStatus = 'FULLY_DELIVERED';
     req.progressTimeline.push({ step: `Double Confirmed & Completed`, time: NOW });
     showToast(`🎉 Request #${reqId} FULLY COMPLETED via Double Confirmation!`, 'success');
   } else {
     req.status = 'AWAITING_FINAL_CONFIRMATION';
-    showToast(`✔️ Bank confirmed. Awaiting Patient / Hospital confirmation!`, 'info');
+    showToast(`✔️ Bank confirmed delivery! Awaiting Patient / Hospital confirmation.`, 'info');
   }
 
   if (typeof db !== 'undefined' && db) {

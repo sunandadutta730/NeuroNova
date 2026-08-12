@@ -22,7 +22,12 @@ function renderAdmin() {
 
   const activeDonorsCount = registeredDonors.filter(d => d.available).length;
   const pendingReqCount = emergencyRequestsList.filter(r => r.status === 'PENDING' || r.status === 'Pending').length;
+  const completedReqCount = emergencyRequestsList.filter(r => r.status === 'COMPLETED').length;
+  const pendingDeliveriesCount = emergencyRequestsList.filter(r => r.dispatchStatus === 'DISPATCHED' && r.status !== 'COMPLETED').length;
   const totalStockUnits = BLOOD_BANKS.reduce((acc, b) => acc + (b.units || 0), 0);
+  const totalNgos = (typeof ngoPartnersList !== 'undefined' ? ngoPartnersList.length : 0);
+  const totalContractDonors = (typeof contractDonorsList !== 'undefined' ? contractDonorsList.length : 0);
+  const totalCamps = (typeof bloodCollectionCampsList !== 'undefined' ? bloodCollectionCampsList.length : 0);
 
   return `
     <div class="page-header" style="background: linear-gradient(180deg, #1f2937 0%, #111827 100%); color: #fff;">
@@ -34,13 +39,13 @@ function renderAdmin() {
 
     <section class="section" style="padding-top: 36px;">
       <div class="container">
-        <!-- Summary Cards -->
-        <div class="admin-summary-grid animate-on-scroll">
+        <!-- Summary Cards Grid -->
+        <div class="admin-summary-grid animate-on-scroll" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
           <div class="admin-stat-card">
             <div class="admin-stat-icon red">${SVG_ICONS.users(24)}</div>
             <div>
               <div class="admin-stat-val">${registeredDonors.length}</div>
-              <div class="admin-stat-label">Total Donors (${activeDonorsCount} Available)</div>
+              <div class="admin-stat-label">Total Donors (${activeDonorsCount} Active)</div>
             </div>
           </div>
 
@@ -48,7 +53,7 @@ function renderAdmin() {
             <div class="admin-stat-icon amber">${SVG_ICONS.siren(24)}</div>
             <div>
               <div class="admin-stat-val">${emergencyRequestsList.length}</div>
-              <div class="admin-stat-label">Emergency Requests (${pendingReqCount} Pending)</div>
+              <div class="admin-stat-label">Requests (${pendingReqCount} Pending / ${completedReqCount} Done)</div>
             </div>
           </div>
 
@@ -56,7 +61,39 @@ function renderAdmin() {
             <div class="admin-stat-icon blue">${SVG_ICONS.hospital(24)}</div>
             <div>
               <div class="admin-stat-val">${totalStockUnits}</div>
-              <div class="admin-stat-label">Units in Blood Banks</div>
+              <div class="admin-stat-label">Units in ${BLOOD_BANKS.length} Blood Banks</div>
+            </div>
+          </div>
+
+          <div class="admin-stat-card">
+            <div class="admin-stat-icon green">${SVG_ICONS.check(24)}</div>
+            <div>
+              <div class="admin-stat-val">${completedReqCount}</div>
+              <div class="admin-stat-label">Completed Deliveries (${pendingDeliveriesCount} In Transit)</div>
+            </div>
+          </div>
+
+          <div class="admin-stat-card">
+            <div class="admin-stat-icon purple">🤝</div>
+            <div>
+              <div class="admin-stat-val">${totalNgos}</div>
+              <div class="admin-stat-label">Registered NGO Partners</div>
+            </div>
+          </div>
+
+          <div class="admin-stat-card">
+            <div class="admin-stat-icon red">🩸</div>
+            <div>
+              <div class="admin-stat-val">${totalContractDonors}</div>
+              <div class="admin-stat-label">Contract Donors</div>
+            </div>
+          </div>
+
+          <div class="admin-stat-card">
+            <div class="admin-stat-icon amber">🎪</div>
+            <div>
+              <div class="admin-stat-val">${totalCamps}</div>
+              <div class="admin-stat-label">Collection Camps</div>
             </div>
           </div>
         </div>

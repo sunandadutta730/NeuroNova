@@ -78,13 +78,15 @@ async function confirmPatientReceipt(reqId) {
   req.progressTimeline = req.progressTimeline || [];
   req.progressTimeline.push({ step: 'Patient / Hospital Confirmed Receipt', time: NOW });
 
-  if (req.bankConfirmed) {
+  if (req.bankConfirmed || req.bloodBankDelivered) {
     req.status = 'COMPLETED';
+    req.completedAt = NOW;
+    req.deliveryStatus = 'FULLY_DELIVERED';
     req.progressTimeline.push({ step: 'Double Confirmed & Completed', time: NOW });
     showToast(`🎉 Request #${reqId} FULLY COMPLETED via Double Confirmation!`, 'success');
   } else {
     req.status = 'AWAITING_FINAL_CONFIRMATION';
-    showToast(`✔️ Patient confirmed receipt! Awaiting final Blood Bank confirmation.`, 'info');
+    showToast(`✔️ Patient confirmed receipt! Awaiting Blood Bank delivery confirmation.`, 'info');
   }
 
   if (typeof db !== 'undefined' && db) {
