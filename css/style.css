@@ -5,7 +5,6 @@
 @import url('./components.css');
 @import url('./forms.css');
 @import url('./dashboard.css');
-@import url('./responsive.css');
 
 /* ===== RESET & BASE ===== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
