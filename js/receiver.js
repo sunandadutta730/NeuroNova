@@ -2,6 +2,12 @@
 
 async function handleEmergencyRequest(e) {
   e.preventDefault();
+
+  if (!isUserAuthenticated()) {
+    requireUserAuth(() => handleEmergencyRequest(e), 'submit an emergency blood request');
+    return;
+  }
+
   const patient = document.getElementById('emg-patient').value.trim();
   const blood = document.getElementById('emg-blood').value;
   const hospital = document.getElementById('emg-hospital').value.trim();
@@ -102,6 +108,12 @@ async function confirmPatientReceipt(reqId) {
 
 async function handleMoneyDonation(e) {
   e.preventDefault();
+
+  if (!isUserAuthenticated()) {
+    requireUserAuth(() => handleMoneyDonation(e), 'make a financial contribution');
+    return;
+  }
+
   const donorName = document.getElementById('mny-name').value.trim();
   const amount = parseFloat(document.getElementById('mny-amount').value) || 0;
   const purpose = document.getElementById('mny-purpose').value;

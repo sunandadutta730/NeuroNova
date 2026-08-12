@@ -2,6 +2,12 @@
 
 async function handleRegister(e) {
   e.preventDefault();
+
+  if (!isUserAuthenticated()) {
+    requireUserAuth(() => handleRegister(e), 'submit your donor registration');
+    return;
+  }
+
   const name = document.getElementById('reg-name').value.trim();
   const blood = document.getElementById('reg-blood').value;
   const city = document.getElementById('reg-city').value;
@@ -300,9 +306,18 @@ function renderDonorCards(donors, container) {
           ${SVG_ICONS.droplet(16, 'var(--gray-400)')} ${d.donations || 0} Total Donations
         </div>
       </div>
-      <a href="tel:${d.phone}" class="btn btn-primary btn-sm glow-card" style="width: 100%; font-weight: 700;">
+      <a href="tel:${d.phone}" class="btn btn-primary btn-sm glow-card" style="width: 100%; font-weight: 700;" onclick="handleCallDonorClick(event, '${d.phone}', '${d.name}')">
         ${SVG_ICONS.phone(14)} Call Donor
       </a>
     </div>
   `).join('');
+}
+
+function handleCallDonorClick(e, phone, name) {
+  if (!isUserAuthenticated()) {
+    e.preventDefault();
+    requireUserAuth(() => {
+      window.location.href = `tel:${phone}`;
+    }, `contact donor ${name}`);
+  }
 }

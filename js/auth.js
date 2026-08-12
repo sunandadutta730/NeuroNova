@@ -32,7 +32,27 @@ function findExistingAccount(email, phone) {
   );
 }
 
-function openAuthModal(mode = 'signup', role = 'user') {
+window.pendingPostLoginAction = null;
+
+function isUserAuthenticated() {
+  if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) {
+    return true;
+  }
+  return currentUserAccount !== null || isAdminLoggedIn || currentBloodBankSession !== null;
+}
+
+function requireUserAuth(actionCallback, actionName = 'continue') {
+  if (isUserAuthenticated()) {
+    if (typeof actionCallback === 'function') actionCallback();
+    return true;
+  }
+
+  window.pendingPostLoginAction = typeof actionCallback === 'function' ? actionCallback : null;
+  openAuthModal('login', 'user', `Please log in or create an account to ${actionName}.`);
+  return false;
+}
+
+function openAuthModal(mode = 'signup', role = 'user', customSubtext = null) {
   closeModal();
   const isSignup = mode === 'signup';
 
@@ -47,6 +67,7 @@ function openAuthModal(mode = 'signup', role = 'user') {
         <h3 id="auth-modal-title" style="font-size: 1.45rem; font-weight: 800; color: var(--gray-900); margin: 0 0 6px;">
           ${isSignup ? 'Create LifeLink Account' : 'Welcome Back'}
         </h3>
+        ${customSubtext ? `<p style="font-size: 0.88rem; color: var(--accent); font-weight: 700; background: var(--red-50); padding: 6px 12px; border-radius: var(--radius-sm); margin: 0 0 8px;">${customSubtext}</p>` : ''}
         <p style="font-size: 0.88rem; color: var(--text-secondary); margin: 0;">
           ${isSignup ? 'Join thousands of registered blood donors saving lives' : 'Sign in to manage your donor profile & requests'}
         </p>
@@ -311,6 +332,14 @@ function completeLoginProcess(accountObj, role) {
     role: role || accountObj.role || 'user',
     timestamp: new Date().toISOString()
   });
+
+  if (window.pendingPostLoginAction) {
+    const postAction = window.pendingPostLoginAction;
+    window.pendingPostLoginAction = null;
+    setTimeout(() => {
+      postAction();
+    }, 200);
+  }
 }
 
 function handleGoogleAuth() {
