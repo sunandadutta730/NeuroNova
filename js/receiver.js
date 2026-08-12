@@ -15,6 +15,11 @@ async function handleEmergencyRequest(e) {
   const phone = document.getElementById('emg-phone').value.trim();
   const units = parseInt(document.getElementById('emg-units').value) || 1;
 
+  if (!validateTwoPartName(patient)) {
+    showToast('⚠️ Please enter both the patient\'s first name and last name (e.g. Amit Kumar).', 'error');
+    return;
+  }
+
   if (!validate10DigitPhone(phone)) {
     showToast('⚠️ Contact phone number must contain exactly 10 digits.', 'error');
     return;
