@@ -119,6 +119,7 @@ function openAuthModal(mode = 'signup', role = 'user', customSubtext = null) {
         <div class="form-group" style="text-align: left; margin-bottom: 16px;">
           <label>${role === 'admin' ? 'Passcode / Password' : 'Password'} <span class="required">*</span></label>
           <input type="password" class="form-control" id="auth-password" placeholder="${role === 'admin' ? 'Enter admin passcode' : 'Minimum 6 characters'}" required minlength="${role === 'admin' ? '1' : '6'}">
+          ${isSignup ? `<div id="password-strength-indicator" style="margin-top: 5px; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); display: none;"></div>` : ''}
         </div>
 
         <button type="submit" class="btn btn-primary btn-lg glow-card" style="width: 100%; margin-top: 4px; font-size: 1rem;">
@@ -175,9 +176,22 @@ async function handleAuthSignup(e, role) {
   const phone = document.getElementById('auth-phone').value.trim();
   const password = document.getElementById('auth-password').value;
 
+  if (!validateTwoPartName(name)) {
+    showToast('⚠️ Please enter both your first name and last name (e.g. Rahul Sharma).', 'error');
+    return;
+  }
+
   if (!validate10DigitPhone(phone)) {
     showToast('⚠️ Mobile number must contain exactly 10 digits.', 'error');
     return;
+  }
+
+  if (typeof getPasswordStrength === 'function') {
+    const strength = getPasswordStrength(password);
+    if (strength.score < 2) {
+      showToast('⚠️ Please use a more secure password (minimum 6 characters, mixing letters and numbers).', 'error');
+      return;
+    }
   }
 
   // 1. Check duplicate accounts in Firestore
@@ -438,3 +452,24 @@ function openUserProfileModal() {
     { text: 'Log Out', class: 'btn-primary', action: () => { closeModal(); handleUserLogout(); } }
   ]);
 }
+
+// Global listener to update password strength indicators dynamically on type
+document.addEventListener('input', (e) => {
+  if (e.target && e.target.id === 'auth-password') {
+    const strengthEl = document.getElementById('password-strength-indicator');
+    if (!strengthEl) return;
+    
+    const pwd = e.target.value;
+    if (!pwd) {
+      strengthEl.style.display = 'none';
+      return;
+    }
+    
+    if (typeof getPasswordStrength === 'function') {
+      const strength = getPasswordStrength(pwd);
+      strengthEl.style.display = 'block';
+      strengthEl.textContent = strength.label;
+      strengthEl.style.color = strength.color;
+    }
+  }
+});

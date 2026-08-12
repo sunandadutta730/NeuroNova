@@ -12,11 +12,32 @@ async function handleRegister(e) {
   const blood = document.getElementById('reg-blood').value;
   const city = document.getElementById('reg-city').value;
   const phone = document.getElementById('reg-phone').value.trim();
+  const age = parseInt(document.getElementById('reg-age').value) || 0;
   const lastDonation = document.getElementById('reg-last-donation').value;
+
+  if (!validateTwoPartName(name)) {
+    showToast('⚠️ Please enter both your first name and last name (e.g. Rahul Sharma).', 'error');
+    return;
+  }
+
+  if (age < 18 || age > 60) {
+    showToast('⚠️ Donor age must be between 18 and 60 years.', 'error');
+    return;
+  }
 
   if (!validate10DigitPhone(phone)) {
     showToast('⚠️ Mobile number must contain exactly 10 digits.', 'error');
     return;
+  }
+
+  if (lastDonation) {
+    const lastDate = new Date(lastDonation);
+    const today = new Date();
+    const minDate = new Date('1990-01-01');
+    if (lastDate > today || lastDate < minDate) {
+      showToast('⚠️ Please enter a valid last donation date (between 1990 and today).', 'error');
+      return;
+    }
   }
 
   if (typeof isDuplicateDonorRecord === 'function' && isDuplicateDonorRecord(registeredDonors, null, phone)) {
@@ -31,6 +52,7 @@ async function handleRegister(e) {
     blood,
     city,
     phone,
+    age,
     available: true,
     lastDonation: lastDonation || NOW.split('T')[0],
     donations: 1,
@@ -55,6 +77,10 @@ async function handleRegister(e) {
           phone: phone,
           blood: blood,
           city: city,
+<<<<<<< HEAD
+=======
+          age: age,
+>>>>>>> f7eadcb (feat: implement core authentication system and secure Firestore rules with owner-based access control)
           role: 'donor'
         });
         console.log('✅ Updated existing user account to donor role:', userId);
@@ -194,9 +220,14 @@ function renderRegister() {
                 <input type="tel" class="form-control" id="reg-phone" placeholder="10-digit mobile number" required maxlength="10" minlength="10" pattern="[0-9]{10}" autocomplete="tel">
               </div>
 
+              <div class="form-group">
+                <label>Age (Years) <span class="required">*</span></label>
+                <input type="number" class="form-control" id="reg-age" placeholder="Age (18 - 60)" required min="18" max="60">
+              </div>
+
               <div class="form-group full-width">
                 <label>Last Donation Date <span style="font-weight:400; color:var(--text-secondary);">(Optional)</span></label>
-                <input type="date" class="form-control" id="reg-last-donation" onchange="checkDonationEligibility()">
+                <input type="date" class="form-control" id="reg-last-donation" onchange="checkDonationEligibility()" max="${new Date().toISOString().split('T')[0]}">
                 <div id="donation-warning" style="display:none;"></div>
               </div>
             </div>

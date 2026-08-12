@@ -36,3 +36,10 @@ Thumbs.db
 # Temporary files & logs
 *.log
 *.tmp
+<<<<<<< HEAD
+=======
+
+# Build outputs
+dist/
+/dist
+>>>>>>> f7eadcb (feat: implement core authentication system and secure Firestore rules with owner-based access control)
