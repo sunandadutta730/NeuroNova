@@ -43,3 +43,32 @@ if (!fs.existsSync(configDir)) {
 
 fs.writeFileSync(path.join(configDir, 'firebase-config.js'), configContent, 'utf8');
 console.log(' Generated config/firebase-config.js successfully.');
+
+// 3. Compile deployment package in 'dist' directory for production hosting
+const distDir = path.join(__dirname, 'dist');
+if (fs.existsSync(distDir)) {
+  fs.rmSync(distDir, { recursive: true, force: true });
+}
+fs.mkdirSync(distDir);
+
+function copyRecursiveSync(src, dest) {
+  const exists = fs.existsSync(src);
+  const stats = exists && fs.statSync(src);
+  const isDirectory = exists && stats.isDirectory();
+  if (isDirectory) {
+    fs.mkdirSync(dest, { recursive: true });
+    fs.readdirSync(src).forEach(childItemName => {
+      copyRecursiveSync(path.join(src, childItemName), path.join(dest, childItemName));
+    });
+  } else {
+    fs.copyFileSync(src, dest);
+  }
+}
+
+// Copy static assets to distribution output folder
+fs.copyFileSync(path.join(__dirname, 'index.html'), path.join(distDir, 'index.html'));
+copyRecursiveSync(path.join(__dirname, 'css'), path.join(distDir, 'css'));
+copyRecursiveSync(path.join(__dirname, 'js'), path.join(distDir, 'js'));
+copyRecursiveSync(path.join(__dirname, 'config'), path.join(distDir, 'config'));
+
+console.log(' Generated static files distribution in ./dist/ successfully.');
