@@ -1,8 +1,6 @@
 # ===== LifeLink .gitignore =====
 
-# Firebase configuration with sensitive API key override
-config/firebase-config.js
-firebase-config.js
+# NOTE: Firebase config is now inlined in index.html — no separate file to ignore
 
 # Dependencies
 node_modules/
