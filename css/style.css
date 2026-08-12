@@ -393,3 +393,17 @@ h1, h2, h3, h4, h5, h6 { font-family: 'Outfit', 'Inter', sans-serif; line-height
   border-color: #ef4444 !important;
   box-shadow: 0 10px 25px -5px rgba(0,0,0,0.6), 0 0 25px rgba(239, 68, 68, 0.25) !important;
 }
+
+[data-theme="dark"] .nav.open {
+  background: #0f172a !important;
+  border-top-color: #334155 !important;
+}
+[data-theme="dark"] .nav.open a {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+  color: #f8fafc !important;
+}
+[data-theme="dark"] .nav.open a.active {
+  background: #dc2626 !important;
+  color: #ffffff !important;
+}

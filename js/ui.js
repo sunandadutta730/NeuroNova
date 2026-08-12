@@ -75,7 +75,7 @@ function updateAuthHeader() {
     `;
   } else {
     container.innerHTML = `
-      <button class="btn btn-outline btn-sm" onclick="openBloodBankLoginModal()" style="border-color: var(--border-color);">🏥 Blood Bank</button>
+      <button class="btn btn-outline btn-sm header-bank-btn" onclick="openBloodBankLoginModal()" style="border-color: var(--border-color);">🏥 Blood Bank</button>
       <button class="btn btn-primary btn-sm nav-login-btn glow-card" onclick="openAuthModal('signup', 'user')">🚀 Login / Sign Up</button>
     `;
   }
@@ -110,6 +110,13 @@ function toggleMobileMenu() {
   const toggle = document.getElementById('mobile-toggle');
   if (nav) nav.classList.toggle('open');
   if (toggle) toggle.classList.toggle('open');
+}
+
+function closeMobileMenu() {
+  const nav = document.getElementById('main-nav');
+  const toggle = document.getElementById('mobile-toggle');
+  if (nav) nav.classList.remove('open');
+  if (toggle) toggle.classList.remove('open');
 }
 
 function showModal(title, bodyHtml, actions = []) {
