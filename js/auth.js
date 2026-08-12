@@ -228,9 +228,8 @@ function completeUserSignup(name, email, phone, password, role) {
               showToast('❌ Email already in use by another account.', 'error');
             });
         } else {
-          console.warn('Firebase createUser error:', err.message);
-          completeLoginProcess(userAccount, role);
-          saveUserAccountToFirebase(userAccount);
+          console.error('Firebase createUser error:', err.message);
+          showToast(`❌ Sign Up Failed: ${err.message}`, 'error');
         }
       });
   } else {
@@ -245,13 +244,16 @@ function handleAuthLogin(e, role) {
   const password = document.getElementById('auth-password').value;
 
   if (role === 'admin') {
-    if (password === 'admin123' || password === 'admin') {
+    const adminPass = (window.firebaseConfig && window.firebaseConfig.adminPassword) || 'admin123';
+    const adminEmail = (window.firebaseConfig && window.firebaseConfig.adminEmail) || 'admin@lifelink.org';
+
+    if (password === adminPass) {
       isAdminLoggedIn = true;
       localStorage.setItem('lifelink_admin_logged_in', 'true');
 
       const adminAccount = {
         name: 'System Administrator',
-        email: email || 'admin@lifelink.org',
+        email: email || adminEmail,
         role: 'admin',
         loggedInAt: new Date().toISOString()
       };

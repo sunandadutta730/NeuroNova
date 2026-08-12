@@ -11,18 +11,22 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    // 1. users: Allow public read and registration; write if owner or authenticated
+    function isDocOwner() {
+      return isAuthenticated() && (resource == null || request.auth.uid == resource.data.uid);
+    }
+
+    // 1. users: Allow public read and registration; write if owner
     match /users/{userId} {
       allow read: if true;
       allow create: if true;
-      allow update, delete: if isAuthenticated();
+      allow update, delete: if isOwner(userId);
     }
 
-    // 2. donors: Public read for emergency matching; create for registration; update if authenticated or valid payload
+    // 2. donors: Public read for matching; write if authenticated owner
     match /donors/{donorId} {
       allow read: if true;
       allow create: if true;
-      allow update, delete: if isAuthenticated() || request.resource.data.keys().hasAll(['name', 'phone', 'blood']);
+      allow update, delete: if isOwner(donorId) || isDocOwner();
     }
 
     // 3. receivers
@@ -31,74 +35,67 @@ service cloud.firestore {
       allow update, delete: if isAuthenticated();
     }
 
-    // 4. bloodBanks: Public read for network directory; write for registration and updates
+    // 4. bloodBanks: Public read; write if authenticated owner
     match /bloodBanks/{bankId} {
       allow read: if true;
       allow create: if true;
-      allow update, delete: if isAuthenticated() || request.resource.data.keys().hasAll(['name', 'licenseNumber']);
+      allow update, delete: if isOwner(bankId) || isDocOwner();
     }
 
-    // 5. bloodInventory: Public read for stock matrix; create/update for inventory adjustments
+    // 5. bloodInventory: Public read; write if authenticated
     match /bloodInventory/{inventoryId} {
       allow read: if true;
-      allow create, update: if true;
-      allow delete: if isAuthenticated();
+      allow create, update, delete: if isAuthenticated();
     }
 
-    // 6. bloodRequests: Public read & create for emergency requests; update for acceptance/confirmation steps
+    // 6. bloodRequests: Public read; create and update if authenticated
     match /bloodRequests/{requestId} {
       allow read: if true;
       allow create: if true;
-      allow update: if true;
-      allow delete: if isAuthenticated();
+      allow update, delete: if isAuthenticated();
     }
 
     // 7. dispatches
     match /dispatches/{dispatchId} {
       allow read: if true;
-      allow create, update: if true;
-      allow delete: if isAuthenticated();
+      allow create, update, delete: if isAuthenticated();
     }
 
-    // 8. notifications: Public read & create for broadcast alerts
+    // 8. notifications
     match /notifications/{notificationId} {
-      allow read, create: if true;
+      allow read: if true;
+      allow create: if true;
       allow update, delete: if isAuthenticated();
     }
 
     // 9. donations
     match /donations/{donationId} {
       allow read: if true;
-      allow create, update: if true;
-      allow delete: if isAuthenticated();
+      allow create, update, delete: if isAuthenticated();
     }
 
     // 10. contractDonors
     match /contractDonors/{donorId} {
       allow read: if true;
-      allow create, update: if true;
-      allow delete: if isAuthenticated();
+      allow create, update, delete: if isAuthenticated();
     }
 
     // 11. ngoPartners
     match /ngoPartners/{partnerId} {
       allow read: if true;
-      allow create, update: if true;
-      allow delete: if isAuthenticated();
+      allow create, update, delete: if isAuthenticated();
     }
 
     // 12. bloodCollectionCamps
     match /bloodCollectionCamps/{campId} {
       allow read: if true;
-      allow create, update: if true;
-      allow delete: if isAuthenticated();
+      allow create, update, delete: if isAuthenticated();
     }
 
     // 13. bloodBankStaff
     match /bloodBankStaff/{staffId} {
       allow read: if true;
-      allow create, update: if true;
-      allow delete: if isAuthenticated();
+      allow create, update, delete: if isAuthenticated();
     }
 
     // 14. activityLogs: Write for audit trail
@@ -110,8 +107,7 @@ service cloud.firestore {
     // 15. reports
     match /reports/{reportId} {
       allow read: if true;
-      allow create, update: if true;
-      allow delete: if isAuthenticated();
+      allow create, update, delete: if isAuthenticated();
     }
 
     // 16. settings

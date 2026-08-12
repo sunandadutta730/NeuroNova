@@ -4,7 +4,8 @@
   "description": "Smart Blood Donor Network & Emergency Dispatch Platform",
   "main": "index.html",
   "scripts": {
-    "start": "python -m http.server 8080"
+    "start": "node generate-config.js && python -m http.server 8080",
+    "build": "node generate-config.js"
   },
   "keywords": [
     "blood-donor",

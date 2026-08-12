@@ -310,19 +310,43 @@ async function adminUpdateStock(bankId, delta) {
   const bank = BLOOD_BANKS.find(b => b.id === bankId);
   if (!bank) return;
 
-  bank.units = Math.max(0, (bank.units || 0) + delta);
+  if (!bank.bloods) {
+    bank.bloods = { 'O+': 40, 'A+': 30, 'B+': 25, 'AB+': 15, 'O-': 5, 'A-': 3, 'B-': 1, 'AB-': 1 };
+  }
+
+  const grps = ['O+', 'A+', 'B+', 'AB+', 'O-', 'A-', 'B-', 'AB-'];
+
+  if (delta > 0) {
+    bank.bloods['O+'] = (bank.bloods['O+'] || 0) + delta;
+  } else {
+    let remaining = Math.abs(delta);
+    for (const g of grps) {
+      const count = bank.bloods[g] || 0;
+      if (count >= remaining) {
+        bank.bloods[g] = count - remaining;
+        remaining = 0;
+        break;
+      } else {
+        remaining -= count;
+        bank.bloods[g] = 0;
+      }
+    }
+  }
+
+  bank.units = Object.values(bank.bloods).reduce((sum, count) => sum + count, 0);
 
   if (typeof db !== 'undefined' && db) {
     try {
       await db.collection('bloodBanks').doc(bankId).update({
-        units: bank.units
+        units: bank.units,
+        bloods: bank.bloods
       });
     } catch (err) {
       console.error('Stock update error:', err);
     }
   }
 
-  showToast(`Stock updated for ${bank.name}`, 'success');
+  showToast(`Stock updated for ${bank.name}: ${bank.units} total units`, 'success');
   renderPage();
 }
 

@@ -408,27 +408,35 @@ function logActivity(action, performedBy, role, details) {
 function saveUserAccountToFirebase(userAccount) {
   if (!db) return;
   const NOW = new Date().toISOString();
+  const userId = userAccount.uid || userAccount.id;
+  if (!userId) return;
 
-  // Save to users collection
-  db.collection('users').add({
-    ...userAccount,
-    createdAt: NOW
-  }).then(ref => console.log('✅ Account saved to users:', ref.id))
+  // Save to users collection using userId as document ID to prevent duplication
+  db.collection('users').doc(userId).set({
+    uid: userId,
+    name: userAccount.name || '',
+    email: userAccount.email || '',
+    phone: userAccount.phone || '',
+    role: userAccount.role || 'donor',
+    city: userAccount.city || 'Mumbai',
+    createdAt: userAccount.createdAt || NOW
+  }, { merge: true }).then(() => console.log('✅ Account saved/merged in users collection:', userId))
     .catch(err => console.error('❌ users save error:', err));
 
-  // If role is donor, save to donors collection
+  // If role is donor, save to donors collection using userId as document ID to prevent duplication
   if (userAccount.role === 'donor' || userAccount.role === 'user') {
-    db.collection('donors').add({
-      name: userAccount.name,
-      email: userAccount.email,
-      phone: userAccount.phone,
+    db.collection('donors').doc(userId).set({
+      id: userAccount.donorId || `DNR-${userId.slice(-6).toUpperCase()}`,
+      name: userAccount.name || '',
+      email: userAccount.email || '',
+      phone: userAccount.phone || '',
       blood: userAccount.blood || 'O+',
       city: userAccount.city || 'Mumbai',
       available: true,
       donations: 0,
       lastDonation: null,
       registeredAt: NOW
-    }).then(ref => console.log('✅ Donor saved to donors:', ref.id))
+    }, { merge: true }).then(() => console.log('✅ Donor saved/merged in donors collection:', userId))
       .catch(err => console.error('❌ donors save error:', err));
   }
 

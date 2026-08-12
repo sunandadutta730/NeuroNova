@@ -1,14 +1,29 @@
 # ===== LifeLink .gitignore =====
 
-# NOTE: Firebase config is now inlined in index.html — no separate file to ignore
+# Firebase configuration with sensitive API key override
+config/firebase-config.js
+firebase-config.js
 
 # Dependencies
 node_modules/
 package-lock.json
 
-# Environment overrides
+# Environment overrides & local secrets
 .env
 .env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.share
+.env*.local
+
+# Firebase CLI cache & debug logs
+.firebase/
+*-debug.log
+.firestore/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
 
 # OS system files
 .DS_Store
@@ -21,6 +36,3 @@ Thumbs.db
 # Temporary files & logs
 *.log
 *.tmp
-
-
-

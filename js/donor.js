@@ -40,17 +40,25 @@ async function handleRegister(e) {
   // Sync strictly to donors and users collection in Firestore
   if (typeof db !== 'undefined' && db) {
     try {
-      await db.collection('donors').doc(newDonor.id).set(newDonor);
-      console.log('✅ Donor saved to donors collection:', newDonor.id);
+      const userId = currentUserAccount ? (currentUserAccount.uid || currentUserAccount.id) : null;
+      const donorDocId = userId || newDonor.id;
 
-      await db.collection('users').add({
-        name,
-        phone,
-        blood,
-        city,
-        role: 'donor',
-        createdAt: NOW
-      });
+      await db.collection('donors').doc(donorDocId).set({
+        ...newDonor,
+        uid: userId || ''
+      }, { merge: true });
+      console.log('✅ Donor saved to donors collection:', donorDocId);
+
+      if (userId) {
+        // Update existing user profile role to donor, instead of creating a duplicate document
+        await db.collection('users').doc(userId).update({
+          phone: phone,
+          blood: blood,
+          city: city,
+          role: 'donor'
+        });
+        console.log('✅ Updated existing user account to donor role:', userId);
+      }
     } catch (err) {
       console.error('❌ Firestore donors write error:', err);
     }
