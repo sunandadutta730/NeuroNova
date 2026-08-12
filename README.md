@@ -137,8 +137,8 @@ To host this repository live for free on GitHub Pages:
 
 Designed & Developed with ❤️ by:
 * **Sunanda Dutta**
-* **Souham Dutta**
 * **Riddhika Ghosh**
+* **Souham Dutta**
 
 Built for the **Hackathon Competition**.  
 Licensed under the [MIT License](LICENSE).
