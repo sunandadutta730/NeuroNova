@@ -111,84 +111,7 @@ async function confirmPatientReceipt(reqId) {
   renderPage();
 }
 
-async function handleMoneyDonation(e) {
-  e.preventDefault();
 
-  if (!isUserAuthenticated()) {
-    requireUserAuth(() => handleMoneyDonation(e), 'make a financial contribution');
-    return;
-  }
-
-  const donorName = document.getElementById('mny-name').value.trim();
-  const amount = parseFloat(document.getElementById('mny-amount').value) || 0;
-  const purpose = document.getElementById('mny-purpose').value;
-
-  if (amount <= 0) {
-    showToast('⚠️ Please enter a valid donation amount.', 'error');
-    return;
-  }
-
-  const donationData = {
-    id: `MNY-${Date.now().toString().slice(-4)}`,
-    donorName: donorName || 'Anonymous Hero',
-    amount,
-    purpose,
-    transactionId: `TXN-${Math.floor(1000000 + Math.random() * 9000000)}`,
-    timestamp: new Date().toISOString()
-  };
-
-  if (typeof saveMoneyDonationToFirebase === 'function') {
-    saveMoneyDonationToFirebase(donationData);
-  }
-
-  closeModal();
-  showToast(`❤️ Thank you ${donationData.donorName}! Your financial contribution of ₹${amount} was received!`, 'success');
-  if (typeof renderPage === 'function') renderPage();
-}
-
-function openMoneyDonationModal() {
-  closeModal();
-  const overlay = document.createElement('div');
-  overlay.className = 'modal-overlay active';
-  overlay.innerHTML = `
-    <div class="modal" style="max-width: 460px; padding: 32px; border-radius: var(--radius-xl);">
-      <div style="text-align: center; margin-bottom: 20px;">
-        <div style="width: 56px; height: 56px; background: linear-gradient(135deg, #10b981, #059669); border-radius: var(--radius-md); display: inline-flex; align-items: center; justify-content: center; color: #fff; margin-bottom: 12px; font-size: 1.8rem; box-shadow: 0 4px 14px rgba(16,185,129,0.35);">
-          💳
-        </div>
-        <h3 style="font-size: 1.45rem; font-weight: 800; margin: 0 0 4px; color: var(--text-primary);">Support LifeLink Mission</h3>
-        <p style="font-size: 0.88rem; color: var(--text-secondary); margin: 0;">Fund cold-chain storage, mobile camps, and emergency logistics.</p>
-      </div>
-
-      <form onsubmit="handleMoneyDonation(event)">
-        <div class="form-group" style="margin-bottom: 12px;">
-          <label>Your Name (Optional)</label>
-          <input type="text" class="form-control" id="mny-name" placeholder="e.g. Ananya Sharma">
-        </div>
-        <div class="form-group" style="margin-bottom: 12px;">
-          <label>Contribution Amount (₹) <span class="required">*</span></label>
-          <input type="number" class="form-control" id="mny-amount" min="100" value="1000" required>
-        </div>
-        <div class="form-group" style="margin-bottom: 20px;">
-          <label>Support Purpose</label>
-          <select class="form-control" id="mny-purpose">
-            <option value="Emergency Logistics">Emergency Logistics & Transport</option>
-            <option value="Mobile Camp Support">Mobile Blood Camp Support</option>
-            <option value="Cold Chain Storage">Cold-Chain Storage Equipment</option>
-            <option value="General Support" selected>General Healthcare Fund</option>
-          </select>
-        </div>
-
-        <button type="submit" class="btn btn-primary btn-lg glow-card" style="width: 100%; font-weight: 700; background: linear-gradient(135deg, #10b981, #059669); border: none;">
-          ❤️ Complete Money Donation
-        </button>
-      </form>
-
-      <button class="btn btn-outline btn-sm" onclick="closeModal()" style="width: 100%; margin-top: 14px; border-color: var(--border-color);">Cancel</button>
-    </div>
-  `;
-  document.body.appendChild(overlay);
-}
 
 function getUrgencyClass(urgency) {
   if (urgency === 'critical') return 'badge-red';
@@ -199,14 +122,11 @@ function getUrgencyClass(urgency) {
 function renderEmergency() {
   return `
     <div class="page-header" style="background: linear-gradient(180deg, #fef2f2 0%, #fff 100%);">
-      <div class="container" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+      <div class="container">
         <div>
           <h1 style="color: var(--red-700);">${SVG_ICONS.siren(32, 'var(--red-600)')} Emergency Blood Dispatch</h1>
           <p style="margin: 0;">Broadcast urgent blood requests directly to nearby active donors and regional blood banks.</p>
         </div>
-        <button class="btn btn-primary glow-card" onclick="openMoneyDonationModal()" style="background: linear-gradient(135deg, #10b981, #059669); border: none; font-weight: 700;">
-          💳 Donate Money / Financial Aid
-        </button>
       </div>
     </div>
 
@@ -280,12 +200,12 @@ function renderEmergency() {
             </form>
           </div>
 
-          <!-- Active Requests Sidebar & Financial Aid Summary -->
+          <!-- Active Requests Sidebar -->
           <div>
             <h3 style="font-size: 1.2rem; font-weight: 800; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
               ${SVG_ICONS.activity(20, 'var(--red-600)')} Live Emergency Feed
             </h3>
-            <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px;">
+            <div style="display: flex; flex-direction: column; gap: 14px;">
               ${emergencyRequestsList.map(r => `
                 <div class="card glow-card" style="padding: 18px; border-left: 4px solid ${r.urgency === 'critical' ? 'var(--critical)' : 'var(--warning)'};">
                   <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
@@ -320,20 +240,6 @@ function renderEmergency() {
                 </div>
               `).join('')}
             </div>
-
-            <!-- Financial Aid Contributions Card -->
-            <div class="card" style="padding: 18px;">
-              <h4 style="font-size: 1.05rem; font-weight: 800; margin: 0 0 10px; color: var(--text-primary);">💳 Recent Money Contributions</h4>
-              <div style="display: flex; flex-direction: column; gap: 8px;">
-                ${typeof moneyDonationsList !== 'undefined' && moneyDonationsList.length > 0 ? moneyDonationsList.slice(0, 3).map(m => `
-                  <div style="display: flex; justify-content: space-between; font-size: 0.82rem; background: var(--bg-muted); padding: 8px 10px; border-radius: var(--radius-sm);">
-                    <span><strong>${m.donorName}</strong> (${m.purpose})</span>
-                    <strong style="color: #10b981;">+₹${m.amount}</strong>
-                  </div>
-                `).join('') : '<div style="font-size: 0.8rem; color: var(--text-muted);">No money donations recorded yet.</div>'}
-              </div>
-            </div>
-
           </div>
         </div>
       </div>
