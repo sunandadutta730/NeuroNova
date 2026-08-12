@@ -354,6 +354,7 @@ h1, h2, h3, h4, h5, h6 { font-family: 'Outfit', 'Inter', sans-serif; line-height
 [data-theme="dark"] .lp-hero-title {
   color: #ffffff !important;
 }
+[data-theme="dark"] .logo-text span:first-child,
 [data-theme="dark"] .logo span:first-of-type {
   color: #f8fafc !important;
 }

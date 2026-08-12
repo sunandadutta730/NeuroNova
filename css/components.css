@@ -46,7 +46,13 @@
   font-size: 1.3rem;
   box-shadow: 0 2px 8px rgba(220,38,38,0.3);
 }
+.logo-text {
+  display: inline-flex;
+  align-items: center;
+}
+.logo-text span:first-child,
 .logo span:first-of-type { color: var(--gray-800); }
+.logo-text span:last-child,
 .logo span:last-of-type { color: var(--accent); }
 
 .header-auth-action {
