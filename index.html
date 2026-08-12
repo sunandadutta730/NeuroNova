@@ -16,6 +16,11 @@
   <link rel="stylesheet" href="css/style.css?v=7">
   <link rel="icon"
     href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23dc2626'><path d='M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z'/></svg>">
+  <!-- Force light mode: override any device dark-mode preference before page renders -->
+  <script>
+    document.documentElement.setAttribute('data-theme', 'light');
+    localStorage.setItem('lifelink_theme', 'light');
+  </script>
 </head>
 
 <body>

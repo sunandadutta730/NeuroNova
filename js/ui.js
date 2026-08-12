@@ -169,7 +169,8 @@ function initScrollReveal() {
 
 /* ===== THEME ENGINE & TOGGLE CONTROLLER ===== */
 function initTheme() {
-  const savedTheme = localStorage.getItem('lifelink_theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  // Always default to light mode — ignore device dark mode preference
+  const savedTheme = localStorage.getItem('lifelink_theme') || 'light';
   setTheme(savedTheme);
 }
 
