@@ -123,10 +123,8 @@ function renderEmergency() {
   return `
     <div class="page-header" style="background: linear-gradient(180deg, #fef2f2 0%, #fff 100%);">
       <div class="container">
-        <div>
-          <h1 style="color: var(--red-700);">${SVG_ICONS.siren(32, 'var(--red-600)')} Emergency Blood Dispatch</h1>
-          <p style="margin: 0;">Broadcast urgent blood requests directly to nearby active donors and regional blood banks.</p>
-        </div>
+        <h1 style="color: var(--red-700);">${SVG_ICONS.siren(32, 'var(--red-600)')} Emergency Blood Dispatch</h1>
+        <p>Broadcast urgent blood requests directly to nearby active donors and regional blood banks.</p>
       </div>
     </div>
 
