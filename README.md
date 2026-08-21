@@ -9,7 +9,7 @@
 
 **An intelligent, real-time blood donation matching & emergency dispatch platform built to reduce critical blood shortage response times.**
 
-[Live Web App](https://neuronova-phi.vercel.app/) · [Report Bug](https://github.com/sunandadutta730/LifeLink/issues) · [Request Feature](https://github.com/sunandadutta730/LifeLink/issues)
+[Live Web App](https://neuronova-phi.vercel.app/) · [Report Bug](https://github.com/sunandadutta730/NeuroNova/issues) · [Request Feature](https://github.com/sunandadutta730/NeuroNova/issues)
 
 </div>
 
