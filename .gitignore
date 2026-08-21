@@ -42,4 +42,7 @@ Thumbs.db
 # Build outputs
 dist/
 /dist
+<<<<<<< HEAD
 >>>>>>> f7eadcb (feat: implement core authentication system and secure Firestore rules with owner-based access control)
+=======
+>>>>>>> d2d5e3ee395ad8831233b6a7ab4f13b1c762d4d3

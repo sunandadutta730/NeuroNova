@@ -78,9 +78,13 @@ async function handleRegister(e) {
           blood: blood,
           city: city,
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
           age: age,
 >>>>>>> f7eadcb (feat: implement core authentication system and secure Firestore rules with owner-based access control)
+=======
+          age: age,
+>>>>>>> d2d5e3ee395ad8831233b6a7ab4f13b1c762d4d3
           role: 'donor'
         });
         console.log('✅ Updated existing user account to donor role:', userId);
