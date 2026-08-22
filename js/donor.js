@@ -340,18 +340,10 @@ function renderDonorCards(donors, container) {
           ${SVG_ICONS.droplet(16, 'var(--gray-400)')} ${d.donations || 0} Total Donations
         </div>
       </div>
-      <a href="tel:${d.phone}" class="btn btn-primary btn-sm glow-card" style="width: 100%; font-weight: 700;" onclick="handleCallDonorClick(event, '${d.phone}', '${d.name}')">
-        ${SVG_ICONS.phone(14)} Call Donor
-      </a>
+      <button type="button" class="btn btn-primary btn-sm glow-card" style="width: 100%; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 6px;" onclick="handleMsgDonorClick(event, '${d.id || d.name}', '${d.name}', '${d.blood}', '${d.city}')">
+        ${SVG_ICONS.message(14, '#ffffff')} Msg Now
+      </button>
     </div>
   `).join('');
 }
 
-function handleCallDonorClick(e, phone, name) {
-  if (!isUserAuthenticated()) {
-    e.preventDefault();
-    requireUserAuth(() => {
-      window.location.href = `tel:${phone}`;
-    }, `contact donor ${name}`);
-  }
-}

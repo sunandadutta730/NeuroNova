@@ -238,15 +238,11 @@ function renderEmergency() {
                       </div>
                     ` : ''}
 
-                    ${r.status !== 'COMPLETED' ? `
-                      <button class="btn btn-outline btn-sm" style="width: 100%; font-weight: 700; border-color: #10b981; color: #10b981;" onclick="confirmPatientReceipt('${r.id}')">
-                        ✔️ Patient / Hospital Confirm Delivery
-                      </button>
-                    ` : `
+                    ${r.status === 'COMPLETED' ? `
                       <div class="badge badge-green" style="width: 100%; text-align: center; padding: 6px;">
-                        ✅ DOUBLE CONFIRMED & CLOSED
+                        ✅ CLOSED & DELIVERED
                       </div>
-                    `}
+                    ` : ''}
                   </div>
                 `).join('');
               })()}
