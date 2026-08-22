@@ -207,7 +207,6 @@ function renderEmergency() {
               <span style="display: flex; align-items: center; gap: 8px;">
                 ${SVG_ICONS.activity(20, 'var(--red-600)')} Live Emergency Feed
               </span>
-              <span class="badge badge-accent" style="font-weight: 700;">Latest 5</span>
             </h3>
             <div style="display: flex; flex-direction: column; gap: 14px;">
               ${(() => {

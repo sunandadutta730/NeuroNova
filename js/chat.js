@@ -1,4 +1,4 @@
-/* ===== LifeLink Floating Messaging Widget & Chat Module ===== */
+/* ===== LifeLink Floating Messaging Widget & User-to-User Chat Module ===== */
 
 // Default Seed Conversations
 const DEFAULT_CHAT_CONVERSATIONS = [
@@ -12,7 +12,7 @@ const DEFAULT_CHAT_CONVERSATIONS = [
       role: 'Donor',
       status: 'Available Now'
     },
-    unreadCount: 1,
+    unreadCount: 0,
     lastUpdated: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
     messages: [
       { id: 'm1', sender: 'them', text: 'Hello! I saw your urgent request for O+ blood in Mumbai. Is it still needed?', timestamp: '12:40 PM' },
@@ -61,7 +61,7 @@ let isChatExpanded = false;
 let activeChatId = null;
 let mobileChatView = 'list'; // 'list' or 'chat'
 let chatSearchFilter = '';
-let isTypingActive = false;
+let currentSenderRole = 'user'; // 'user' (You) or 'them' (Participant)
 
 // Initialize Chat Module
 function initChatModule() {
@@ -169,6 +169,16 @@ function setMobileChatView(view) {
   }
 }
 
+// Toggle sender mode between 'user' (You) and 'them' (Participant) for multi-person testing
+function toggleSenderRole() {
+  currentSenderRole = currentSenderRole === 'user' ? 'them' : 'user';
+  renderChatWindowContent();
+  setTimeout(() => {
+    const input = document.getElementById('chat-msg-input');
+    if (input) input.focus();
+  }, 50);
+}
+
 // Render Complete Chat Window Structure
 function renderChatWindowContent() {
   const chatWindow = document.getElementById('lifelink-chat-window');
@@ -187,7 +197,7 @@ function renderChatWindowContent() {
           <div class="chat-header-title-icon">
             ${SVG_ICONS.message(16, 'var(--red-600)')}
           </div>
-          <span>LifeLink Messaging</span>
+          <span>LifeLink User Chat</span>
         </div>
       </div>
       <div class="chat-header-controls">
@@ -268,7 +278,7 @@ function renderConversationListHtml() {
             <span class="chat-conv-time">${lastMsg ? lastMsg.timestamp : ''}</span>
           </div>
           <div class="chat-conv-bottom">
-            <span class="chat-conv-preview ${c.unreadCount > 0 ? 'unread' : ''}">${lastText}</span>
+            <span class="chat-conv-preview ${c.unreadCount > 0 ? 'unread' : ''}">${escapeHtml(lastText)}</span>
             <span class="chat-role-badge ${roleClass}">${p.role || 'Donor'}</span>
             ${c.unreadCount > 0 ? `<span class="chat-item-unread-badge">${c.unreadCount}</span>` : ''}
           </div>
@@ -308,7 +318,7 @@ function renderActiveChatHtml(conv) {
         </div>
         <div class="chat-empty-title">Your Messages</div>
         <div class="chat-empty-text">
-          Select a donor or blood bank conversation from the left to start messaging instantly.
+          Select a donor or blood bank conversation from the left to start messaging.
         </div>
       </div>
     `;
@@ -347,26 +357,27 @@ function renderActiveChatHtml(conv) {
         <span>Today</span>
       </div>
 
-      ${conv.messages.map(m => `
+      ${conv.messages && conv.messages.length > 0 ? conv.messages.map(m => `
         <div class="chat-msg-row ${m.sender === 'user' ? 'sent' : 'received'}">
           <div class="chat-msg-bubble">
             ${escapeHtml(m.text)}
           </div>
           <div class="chat-msg-time">${m.timestamp}</div>
         </div>
-      `).join('')}
-
-      ${isTypingActive ? `
-        <div class="chat-typing-indicator" id="chat-typing-indicator-box">
-          <span style="display:inline-block; animation: pulse 1s infinite;">💬</span> ${p.name} is typing...
+      `).join('') : `
+        <div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin: 20px 0;">
+          No messages in this chat yet. Start typing below!
         </div>
-      ` : ''}
+      `}
     </div>
 
     <!-- Input Footer -->
     <div class="chat-input-container">
-      <input type="text" id="chat-msg-input" class="chat-input" placeholder="Write a message…" onkeydown="handleChatInputKeyDown(event)" autocomplete="off">
-      <button class="chat-send-btn" onclick="sendChatMessage()" aria-label="Send Message" title="Send Message">
+      <button type="button" class="chat-sender-toggle-btn" onclick="toggleSenderRole()" title="Click to switch sender perspective">
+        ${currentSenderRole === 'user' ? '👤 You' : '💬 ' + p.name}
+      </button>
+      <input type="text" id="chat-msg-input" class="chat-input" placeholder="Write a message as ${currentSenderRole === 'user' ? 'You' : p.name}…" onkeydown="handleChatInputKeyDown(event)" autocomplete="off">
+      <button type="button" class="chat-send-btn" onclick="sendChatMessage()" aria-label="Send Message" title="Send Message">
         ${SVG_ICONS.send(16, '#ffffff')}
       </button>
     </div>
@@ -389,7 +400,7 @@ function scrollChatFeedToBottom() {
   }, 50);
 }
 
-// Send Message Logic
+// Send Message Logic (Real User-to-User Chat - No Automated Bot Replies)
 function sendChatMessage() {
   const input = document.getElementById('chat-msg-input');
   if (!input) return;
@@ -402,10 +413,10 @@ function sendChatMessage() {
 
   const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-  // Add User Message
+  // Add Message directly from current selected sender role ('user' or 'them')
   conv.messages.push({
     id: 'msg_' + Date.now(),
-    sender: 'user',
+    sender: currentSenderRole,
     text: text,
     timestamp: timeStr
   });
@@ -421,59 +432,6 @@ function sendChatMessage() {
   // Re-render feed & conversation list
   renderChatWindowContent();
   scrollChatFeedToBottom();
-
-  // Trigger Mock Auto Reply
-  triggerMockAutoReply(conv);
-}
-
-// Mock Auto Reply Generator for realistic interactive demonstration
-function triggerMockAutoReply(conv) {
-  if (isTypingActive) return;
-
-  isTypingActive = true;
-  const feed = document.getElementById('chat-feed-scroll');
-  if (feed) {
-    const typingBox = document.createElement('div');
-    typingBox.id = 'chat-typing-indicator-box';
-    typingBox.className = 'chat-typing-indicator';
-    typingBox.innerHTML = `<span>💬</span> ${conv.participant.name} is typing...`;
-    feed.appendChild(typingBox);
-    feed.scrollTop = feed.scrollHeight;
-  }
-
-  setTimeout(() => {
-    isTypingActive = false;
-    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-    // Generate contextual response
-    let replyText = `Hello! I received your message. I am located in ${conv.participant.city || 'your city'} and ready to assist with ${conv.participant.blood !== 'BANK' ? conv.participant.blood + ' blood donation' : 'blood stock availability'}. Please share the hospital details!`;
-    
-    if (conv.participant.role === 'Blood Bank') {
-      replyText = `Hello from ${conv.participant.name}. We have logged your inquiry and can dispatch units upon verification.`;
-    }
-
-    conv.messages.push({
-      id: 'msg_' + Date.now(),
-      sender: 'them',
-      text: replyText,
-      timestamp: timeStr
-    });
-
-    conv.lastUpdated = new Date().toISOString();
-    saveChatState();
-
-    if (isChatExpanded && activeChatId === conv.id) {
-      renderChatWindowContent();
-      scrollChatFeedToBottom();
-    } else {
-      conv.unreadCount = (conv.unreadCount || 0) + 1;
-      saveChatState();
-      updateChatUnreadBadge();
-      if (typeof showToast === 'function') {
-        showToast(`💬 New message from ${conv.participant.name}`, 'info');
-      }
-    }
-  }, 1200);
 }
 
 // Public API: Open chat with specific user/donor directly from donor card
@@ -497,20 +455,14 @@ function openChatWithUser(userObj) {
       },
       unreadCount: 0,
       lastUpdated: new Date().toISOString(),
-      messages: [
-        {
-          id: 'msg_init_' + Date.now(),
-          sender: 'them',
-          text: `Hi! I am ${userObj.name} (${userObj.blood || 'Donor'}) in ${userObj.city || 'your city'}. Feel free to send a message regarding blood requests or donation!`,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        }
-      ]
+      messages: []
     };
     chatConversations.unshift(conv);
   }
 
   activeChatId = conv.id;
   conv.unreadCount = 0;
+  currentSenderRole = 'user';
   saveChatState();
 
   isChatExpanded = true;
