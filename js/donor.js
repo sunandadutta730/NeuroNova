@@ -46,6 +46,7 @@ async function handleRegister(e) {
   }
 
   const NOW = new Date().toISOString();
+  const userId = currentUserAccount ? (currentUserAccount.uid || currentUserAccount.id) : null;
   const newDonor = {
     id: `DNR-${Date.now().toString().slice(-6)}`,
     name,
@@ -54,15 +55,24 @@ async function handleRegister(e) {
     phone,
     age,
     available: true,
+    verified: false,
+    verificationStatus: 'PENDING',
     lastDonation: lastDonation || NOW.split('T')[0],
     donations: 1,
     registeredAt: NOW
   };
 
+  // Sync locally to registeredDonors array immediately
+  const existingIdx = registeredDonors.findIndex(d => d.id === (userId || newDonor.id));
+  if (existingIdx !== -1) {
+    registeredDonors[existingIdx] = { ...registeredDonors[existingIdx], ...newDonor };
+  } else {
+    registeredDonors.push(newDonor);
+  }
+
   // Sync strictly to donors and users collection in Firestore
   if (typeof db !== 'undefined' && db) {
     try {
-      const userId = currentUserAccount ? (currentUserAccount.uid || currentUserAccount.id) : null;
       const donorDocId = userId || newDonor.id;
 
       await db.collection('donors').doc(donorDocId).set({
@@ -93,13 +103,22 @@ async function handleRegister(e) {
 function showRegistrationSuccessModal(donor) {
   const bodyHtml = `
     <div style="text-align: center; padding: 12px 0;">
-      <div style="width: 64px; height: 64px; background: #ecfdf5; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; color: #10b981;">
-        ${SVG_ICONS.check(36, '#10b981')}
+      <div style="width: 64px; height: 64px; background: #fffbebfb; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; color: #f59e0b;">
+        ${SVG_ICONS.shield(36, '#f59e0b')}
       </div>
-      <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--gray-900); margin-bottom: 8px;">Registration Successful! 🎉</h3>
+      <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--gray-900); margin-bottom: 8px;">Submitted for Admin Verification! ⏳</h3>
       <p style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.6; margin-bottom: 20px;">
-        Thank you, <strong>${donor.name}</strong>! You are now registered as an available <strong>${donor.blood}</strong> blood donor in <strong>${donor.city}</strong>.
+        Thank you, <strong>${donor.name}</strong>! Your donor registration details have been submitted to the <strong>Admin Control Center</strong> for verification.
       </p>
+      <div style="background: #fff8f6; border: 1px dashed var(--accent); border-radius: var(--radius-md); padding: 14px; text-align: left; font-size: 0.88rem; margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+          <span style="color: var(--text-secondary); font-weight: 600;">Verification Status:</span>
+          <span class="badge badge-amber" style="padding: 4px 10px; font-weight: 700;">⏳ Pending Admin Approval</span>
+        </div>
+        <p style="margin: 0; font-size: 0.82rem; color: var(--gray-600); line-height: 1.4;">
+          📌 To ensure network safety, your profile will not be listed in the <strong>Find Donor</strong> directory until an administrator approves your verification.
+        </p>
+      </div>
       <div style="background: var(--gray-50); border-radius: var(--radius-md); padding: 16px; text-align: left; font-size: 0.88rem; margin-bottom: 20px;">
         <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
           <span style="color: var(--text-secondary);">Blood Group:</span>
@@ -117,9 +136,8 @@ function showRegistrationSuccessModal(donor) {
     </div>
   `;
 
-  showModal('LifeLink Network', bodyHtml, [
-    { text: 'View All Donors', class: 'btn-primary', action: () => { closeModal(); navigateTo('find'); } },
-    { text: 'Close', class: 'btn-outline', action: () => closeModal() }
+  showModal('LifeLink Network Verification', bodyHtml, [
+    { text: 'Got It', class: 'btn-primary', action: () => closeModal() }
   ]);
 }
 
@@ -150,7 +168,7 @@ function checkDonationEligibility() {
 }
 
 function renderRegister() {
-  const donorCount = registeredDonors.filter(d => d.available).length;
+  const donorCount = registeredDonors.filter(d => d.available && (d.verified === true || (d.verified !== false && d.verificationStatus !== 'PENDING'))).length;
   return `
     <div class="page-header">
       <div class="container">
@@ -296,6 +314,10 @@ function filterDonors() {
   const status = statusEl ? statusEl.value : 'available';
 
   const filtered = registeredDonors.filter(d => {
+    // Strictly filter out donors who are pending admin approval
+    const isVerified = d.verified === true || (d.verified !== false && d.verificationStatus !== 'PENDING');
+    if (!isVerified) return false;
+
     if (blood && d.blood !== blood) return false;
     if (city && d.city !== city) return false;
     if (status === 'available' && !d.available) return false;

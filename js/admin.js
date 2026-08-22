@@ -1,6 +1,6 @@
 /* ===== LifeLink Admin Control Center Module ===== */
 
-let activeAdminTab = 'donors';
+let activeAdminTab = 'verifications';
 
 function renderAdmin() {
   if (!isAdminLoggedIn) {
@@ -20,7 +20,9 @@ function renderAdmin() {
     `;
   }
 
-  const activeDonorsCount = registeredDonors.filter(d => d.available).length;
+  const pendingVerificationsList = registeredDonors.filter(d => d.verified === false || d.verificationStatus === 'PENDING');
+  const verifiedDonorsList = registeredDonors.filter(d => d.verified !== false && d.verificationStatus !== 'PENDING');
+  const activeDonorsCount = verifiedDonorsList.filter(d => d.available).length;
   const pendingReqCount = emergencyRequestsList.filter(r => r.status === 'PENDING' || r.status === 'Pending').length;
   const completedReqCount = emergencyRequestsList.filter(r => r.status === 'COMPLETED').length;
   const pendingDeliveriesCount = emergencyRequestsList.filter(r => r.dispatchStatus === 'DISPATCHED' && r.status !== 'COMPLETED').length;
@@ -33,7 +35,7 @@ function renderAdmin() {
     <div class="page-header" style="background: linear-gradient(180deg, #1f2937 0%, #111827 100%); color: #fff;">
       <div class="container">
         <h1 style="color: #fff;">${SVG_ICONS.shield(32, '#ef4444')} Admin Control Center</h1>
-        <p style="color: #9ca3af;">Manage donor registries, emergency requests, and stock inventories.</p>
+        <p style="color: #9ca3af;">Manage donor registries, verification approvals, emergency requests, and stock inventories.</p>
       </div>
     </div>
 
@@ -41,11 +43,19 @@ function renderAdmin() {
       <div class="container">
         <!-- Summary Cards Grid -->
         <div class="admin-summary-grid animate-on-scroll" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+          <div class="admin-stat-card" style="${pendingVerificationsList.length > 0 ? 'border: 2px solid var(--warning); background: #fffdf5;' : ''}">
+            <div class="admin-stat-icon amber">${SVG_ICONS.shield(24, 'var(--warning)')}</div>
+            <div>
+              <div class="admin-stat-val">${pendingVerificationsList.length}</div>
+              <div class="admin-stat-label">Pending Verifications</div>
+            </div>
+          </div>
+
           <div class="admin-stat-card">
             <div class="admin-stat-icon red">${SVG_ICONS.users(24)}</div>
             <div>
-              <div class="admin-stat-val">${registeredDonors.length}</div>
-              <div class="admin-stat-label">Total Donors (${activeDonorsCount} Active)</div>
+              <div class="admin-stat-val">${verifiedDonorsList.length}</div>
+              <div class="admin-stat-label">Verified Donors (${activeDonorsCount} Active)</div>
             </div>
           </div>
 
@@ -101,7 +111,10 @@ function renderAdmin() {
         <!-- Admin Tabs Header -->
         <div class="admin-header-actions animate-on-scroll">
           <div class="admin-tabs">
-            <button class="admin-tab ${activeAdminTab === 'donors' ? 'active' : ''}" onclick="switchAdminTab('donors')">Registered Donors (${registeredDonors.length})</button>
+            <button class="admin-tab ${activeAdminTab === 'verifications' ? 'active' : ''}" onclick="switchAdminTab('verifications')">
+              Pending Verifications ${pendingVerificationsList.length > 0 ? `<span class="badge badge-amber" style="margin-left: 6px; padding: 2px 8px; font-weight: 700;">${pendingVerificationsList.length}</span>` : ''}
+            </button>
+            <button class="admin-tab ${activeAdminTab === 'donors' ? 'active' : ''}" onclick="switchAdminTab('donors')">Verified Donors (${verifiedDonorsList.length})</button>
             <button class="admin-tab ${activeAdminTab === 'requests' ? 'active' : ''}" onclick="switchAdminTab('requests')">Emergency Feed (${emergencyRequestsList.length})</button>
             <button class="admin-tab ${activeAdminTab === 'banks' ? 'active' : ''}" onclick="switchAdminTab('banks')">Blood Banks Stock (${BLOOD_BANKS.length})</button>
           </div>
@@ -122,6 +135,67 @@ function switchAdminTab(tabName) {
 }
 
 function renderAdminTabBody() {
+  const pendingVerificationsList = registeredDonors.filter(d => d.verified === false || d.verificationStatus === 'PENDING');
+  const verifiedDonorsList = registeredDonors.filter(d => d.verified !== false && d.verificationStatus !== 'PENDING');
+
+  if (activeAdminTab === 'verifications') {
+    if (pendingVerificationsList.length === 0) {
+      return `
+        <div style="text-align: center; padding: 48px 20px; background: var(--bg-secondary); border-radius: var(--radius-lg); border: 2px dashed var(--border-color);">
+          <div style="font-size: 2.5rem; margin-bottom: 12px; color: var(--gray-400);">${SVG_ICONS.check(48, '#10b981')}</div>
+          <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 6px;">No Pending Verifications</h3>
+          <p style="color: var(--text-secondary); max-width: 420px; margin: 0 auto;">All registered donors have been verified and approved. New donor submissions will automatically appear here for review.</p>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="admin-table-wrapper animate-on-scroll">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Donor Name</th>
+              <th>Blood</th>
+              <th>City</th>
+              <th>Phone</th>
+              <th>Age</th>
+              <th>Registered On</th>
+              <th>Verification Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${pendingVerificationsList.map((d) => `
+              <tr>
+                <td><strong>${d.name}</strong></td>
+                <td><span class="blood-badge">${d.blood}</span></td>
+                <td>${d.city}</td>
+                <td>${d.phone}</td>
+                <td>${d.age || 'N/A'} yrs</td>
+                <td>${d.registeredAt ? new Date(d.registeredAt).toLocaleDateString() : 'Recent'}</td>
+                <td>
+                  <span class="badge badge-amber" style="padding: 4px 10px; font-weight: 700;">
+                    ⏳ Pending Approval
+                  </span>
+                </td>
+                <td>
+                  <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button class="admin-action-btn success" style="background: #10b981; color: #fff; border: none; font-weight: 700; padding: 6px 12px; border-radius: 6px; cursor: pointer;" onclick="adminApproveDonor('${d.id}')">
+                      ✓ Approve & Verify
+                    </button>
+                    <button class="admin-action-btn danger" style="padding: 6px 12px;" onclick="adminRejectDonor('${d.id}')">
+                      ✕ Reject
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
   if (activeAdminTab === 'donors') {
     return `
       <div class="admin-table-wrapper animate-on-scroll">
@@ -133,11 +207,12 @@ function renderAdminTabBody() {
               <th>City</th>
               <th>Phone</th>
               <th>Status</th>
+              <th>Verification</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            ${registeredDonors.map((d, index) => `
+            ${verifiedDonorsList.map((d) => `
               <tr>
                 <td><strong>${d.name}</strong></td>
                 <td><span class="blood-badge">${d.blood}</span></td>
@@ -149,7 +224,12 @@ function renderAdminTabBody() {
                   </span>
                 </td>
                 <td>
-                  <button class="admin-action-btn toggle-btn" onclick="adminToggleDonorStatus(${index})">
+                  <span class="badge badge-green" style="padding: 4px 10px; font-weight: 700;">
+                    Verified ✓
+                  </span>
+                </td>
+                <td>
+                  <button class="admin-action-btn toggle-btn" onclick="adminToggleDonorStatusById('${d.id}')">
                     Toggle Availability
                   </button>
                 </td>
@@ -246,8 +326,52 @@ function renderAdminTabBody() {
   return '';
 }
 
-async function adminToggleDonorStatus(index) {
-  const donor = registeredDonors[index];
+async function adminApproveDonor(donorId) {
+  const donor = registeredDonors.find(d => d.id === donorId);
+  if (!donor) return;
+
+  donor.verified = true;
+  donor.verificationStatus = 'APPROVED';
+
+  // Sync strictly to donors collection in Firestore
+  if (typeof db !== 'undefined' && db && donor.id) {
+    try {
+      await db.collection('donors').doc(donor.id).update({
+        verified: true,
+        verificationStatus: 'APPROVED'
+      });
+      console.log('✅ Donor approved in Firestore:', donor.id);
+    } catch (err) {
+      console.error('Update donor approval error:', err);
+    }
+  }
+
+  showToast(`✅ Donor ${donor.name} approved & verified! They are now visible on Find Donor.`, 'success');
+  renderPage();
+}
+
+async function adminRejectDonor(donorId) {
+  const donor = registeredDonors.find(d => d.id === donorId);
+  const donorName = donor ? donor.name : 'Donor';
+
+  registeredDonors = registeredDonors.filter(d => d.id !== donorId);
+
+  // Sync strictly to donors collection in Firestore
+  if (typeof db !== 'undefined' && db && donorId) {
+    try {
+      await db.collection('donors').doc(donorId).delete();
+      console.log('✅ Donor deleted from Firestore:', donorId);
+    } catch (err) {
+      console.error('Delete donor error:', err);
+    }
+  }
+
+  showToast(`❌ Donor registration for ${donorName} rejected.`, 'info');
+  renderPage();
+}
+
+async function adminToggleDonorStatusById(donorId) {
+  const donor = registeredDonors.find(d => d.id === donorId);
   if (!donor) return;
 
   donor.available = !donor.available;

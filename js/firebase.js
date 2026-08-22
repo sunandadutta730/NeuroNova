@@ -240,16 +240,16 @@ async function seedInitialFirestoreData() {
 
     // 2. donors
     const donorsData = [
-      { id: 'DNR-001', name: 'Rahul Sharma', blood: 'O+', city: 'Mumbai', phone: '+91 98765 43210', available: true, lastDonation: '2026-03-15', donations: 12, registeredAt: NOW },
-      { id: 'DNR-002', name: 'Priya Patel', blood: 'A+', city: 'Delhi', phone: '+91 87654 32109', available: true, lastDonation: '2026-02-20', donations: 8, registeredAt: NOW },
-      { id: 'DNR-003', name: 'Arjun Singh', blood: 'B+', city: 'Bangalore', phone: '+91 76543 21098', available: false, lastDonation: '2026-06-01', donations: 15, registeredAt: NOW },
-      { id: 'DNR-004', name: 'Sneha Reddy', blood: 'AB-', city: 'Hyderabad', phone: '+91 65432 10987', available: true, lastDonation: '2025-12-10', donations: 6, registeredAt: NOW },
-      { id: 'DNR-005', name: 'Amit Kumar', blood: 'O-', city: 'Chennai', phone: '+91 54321 09876', available: true, lastDonation: '2026-01-25', donations: 20, registeredAt: NOW },
-      { id: 'DNR-006', name: 'Divya Nair', blood: 'B-', city: 'Kolkata', phone: '+91 43210 98765', available: true, lastDonation: '2026-04-05', donations: 10, registeredAt: NOW },
-      { id: 'DNR-007', name: 'Karan Mehta', blood: 'A-', city: 'Pune', phone: '+91 32109 87654', available: false, lastDonation: '2026-05-20', donations: 5, registeredAt: NOW },
-      { id: 'DNR-008', name: 'Ananya Gupta', blood: 'AB+', city: 'Ahmedabad', phone: '+91 21098 76543', available: true, lastDonation: '2025-11-18', donations: 9, registeredAt: NOW },
-      { id: 'DNR-009', name: 'Vikram Joshi', blood: 'O+', city: 'Jaipur', phone: '+91 10987 65432', available: true, lastDonation: '2026-03-30', donations: 14, registeredAt: NOW },
-      { id: 'DNR-010', name: 'Meera Iyer', blood: 'A+', city: 'Lucknow', phone: '+91 09876 54321', available: true, lastDonation: '2026-02-14', donations: 7, registeredAt: NOW }
+      { id: 'DNR-001', name: 'Rahul Sharma', blood: 'O+', city: 'Mumbai', phone: '+91 98765 43210', available: true, verified: true, verificationStatus: 'APPROVED', lastDonation: '2026-03-15', donations: 12, registeredAt: NOW },
+      { id: 'DNR-002', name: 'Priya Patel', blood: 'A+', city: 'Delhi', phone: '+91 87654 32109', available: true, verified: true, verificationStatus: 'APPROVED', lastDonation: '2026-02-20', donations: 8, registeredAt: NOW },
+      { id: 'DNR-003', name: 'Arjun Singh', blood: 'B+', city: 'Bangalore', phone: '+91 76543 21098', available: false, verified: true, verificationStatus: 'APPROVED', lastDonation: '2026-06-01', donations: 15, registeredAt: NOW },
+      { id: 'DNR-004', name: 'Sneha Reddy', blood: 'AB-', city: 'Hyderabad', phone: '+91 65432 10987', available: true, verified: true, verificationStatus: 'APPROVED', lastDonation: '2025-12-10', donations: 6, registeredAt: NOW },
+      { id: 'DNR-005', name: 'Amit Kumar', blood: 'O-', city: 'Chennai', phone: '+91 54321 09876', available: true, verified: true, verificationStatus: 'APPROVED', lastDonation: '2026-01-25', donations: 20, registeredAt: NOW },
+      { id: 'DNR-006', name: 'Divya Nair', blood: 'B-', city: 'Kolkata', phone: '+91 43210 98765', available: true, verified: true, verificationStatus: 'APPROVED', lastDonation: '2026-04-05', donations: 10, registeredAt: NOW },
+      { id: 'DNR-007', name: 'Karan Mehta', blood: 'A-', city: 'Pune', phone: '+91 32109 87654', available: false, verified: true, verificationStatus: 'APPROVED', lastDonation: '2026-05-20', donations: 5, registeredAt: NOW },
+      { id: 'DNR-008', name: 'Ananya Gupta', blood: 'AB+', city: 'Ahmedabad', phone: '+91 21098 76543', available: true, verified: true, verificationStatus: 'APPROVED', lastDonation: '2025-11-18', donations: 9, registeredAt: NOW },
+      { id: 'DNR-009', name: 'Vikram Joshi', blood: 'O+', city: 'Jaipur', phone: '+91 10987 65432', available: true, verified: true, verificationStatus: 'APPROVED', lastDonation: '2026-03-30', donations: 14, registeredAt: NOW },
+      { id: 'DNR-010', name: 'Meera Iyer', blood: 'A+', city: 'Lucknow', phone: '+91 09876 54321', available: true, verified: true, verificationStatus: 'APPROVED', lastDonation: '2026-02-14', donations: 7, registeredAt: NOW }
     ];
     donorsData.forEach(d => batch.set(db.collection('donors').doc(d.id), d));
 

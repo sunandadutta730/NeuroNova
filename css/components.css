@@ -22,6 +22,7 @@
   align-items: center;
   justify-content: space-between;
   height: 100%;
+  gap: 12px;
 }
 .logo {
   display: flex;
@@ -32,7 +33,7 @@
   font-weight: 800;
   letter-spacing: -0.5px;
   cursor: pointer;
-  margin-right: 36px;
+  margin-right: 24px;
 }
 .logo-icon {
   width: 38px;
@@ -59,6 +60,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  margin-left: 12px;
 }
 
 .user-avatar-badge {
@@ -89,7 +91,7 @@
   object-fit: cover;
 }
 
-.nav { display: flex; align-items: center; gap: 4px; }
+.nav { display: flex; align-items: center; gap: 6px; }
 .nav a {
   padding: 8px 14px;
   border-radius: var(--radius-sm);

@@ -2,7 +2,7 @@
 
 // Landing Page Renderer
 function renderHome() {
-  const activeDonors = registeredDonors.filter(d => d.available).length;
+  const activeDonors = registeredDonors.filter(d => d.available && (d.verified === true || (d.verified !== false && d.verificationStatus !== 'PENDING'))).length;
   const totalDonations = registeredDonors.reduce((sum, d) => sum + (d.donations || 0), 0);
 
   return `
@@ -319,6 +319,7 @@ function renderDashboard() {
     if (r.city) cityCounts[r.city] = (cityCounts[r.city] || 0) + 1;
   });
   registeredDonors.forEach(d => {
+    if (d.verified === false || d.verificationStatus === 'PENDING') return;
     if (d.city) cityCounts[d.city] = (cityCounts[d.city] || 0) + 1;
   });
 
