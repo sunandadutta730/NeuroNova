@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # ===== LifeLink .gitignore =====
 
 # Firebase configuration with sensitive API key override
@@ -46,3 +47,53 @@ dist/
 >>>>>>> f7eadcb (feat: implement core authentication system and secure Firestore rules with owner-based access control)
 =======
 >>>>>>> d2d5e3ee395ad8831233b6a7ab4f13b1c762d4d3
+=======
+# ===== LifeLink .gitignore =====
+
+# Firebase configuration with sensitive API key override
+config/firebase-config.js
+firebase-config.js
+
+# Dependencies
+node_modules/
+package-lock.json
+
+# Environment overrides & local secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.share
+.env*.local
+
+# Firebase CLI cache & debug logs
+.firebase/
+*-debug.log
+.firestore/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# OS system files
+.DS_Store
+Thumbs.db
+
+# IDE & Editor directories
+.vscode/
+.idea/
+
+# Temporary files & logs
+*.log
+*.tmp
+<<<<<<< HEAD
+=======
+
+# Build outputs
+dist/
+/dist
+<<<<<<< HEAD
+>>>>>>> f7eadcb (feat: implement core authentication system and secure Firestore rules with owner-based access control)
+=======
+>>>>>>> d2d5e3ee395ad8831233b6a7ab4f13b1c762d4d3
+>>>>>>> 1398c28e85db43efd986a32a75ae166613ce9247
