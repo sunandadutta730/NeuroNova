@@ -76,27 +76,38 @@ function updateAuthHeader() {
   } else {
     container.innerHTML = `
       <button class="btn btn-outline btn-sm header-bank-btn" onclick="openBloodBankLoginModal()" style="border-color: var(--border-color);">🏥 Blood Bank</button>
-      <button class="btn btn-primary btn-sm nav-login-btn glow-card" onclick="openAuthModal('signup', 'user')">🚀 Login / Sign Up</button>
+      <button class="btn btn-primary btn-sm nav-login-btn glow-card" onclick="openAuthModal('login', 'user')">🚀 Login</button>
     `;
   }
 }
 
 function openNotificationCenterModal() {
+  const sorted = (typeof notificationsList !== 'undefined' && notificationsList.length > 0)
+    ? [...notificationsList].sort((a, b) => new Date(b.timestamp || b.createdAt || b.registeredAt || 0) - new Date(a.timestamp || a.createdAt || a.registeredAt || 0)).slice(0, 5)
+    : [];
+
   const bodyHtml = `
     <div style="max-height: 400px; overflow-y: auto; text-align: left;">
       <div style="display: flex; flex-direction: column; gap: 10px;">
-        <div style="background: var(--bg-muted); padding: 12px; border-radius: var(--radius-md); border-left: 4px solid var(--accent);">
-          <strong style="color: var(--accent); font-size: 0.88rem;">🚨 Emergency Request Broadcast</strong>
-          <p style="margin: 2px 0 0; font-size: 0.82rem; color: var(--text-secondary);">Urgent O+ Blood needed at Lilavati Hospital, Mumbai.</p>
-        </div>
-        <div style="background: var(--bg-muted); padding: 12px; border-radius: var(--radius-md); border-left: 4px solid #10b981;">
-          <strong style="color: #10b981; font-size: 0.88rem;">✅ Request Accepted</strong>
-          <p style="margin: 2px 0 0; font-size: 0.82rem; color: var(--text-secondary);">Apollo Blood Centre accepted Request #REQ-002.</p>
-        </div>
-        <div style="background: var(--bg-muted); padding: 12px; border-radius: var(--radius-md); border-left: 4px solid #3b82f6;">
-          <strong style="color: #3b82f6; font-size: 0.88rem;">📢 National Grid Alert</strong>
-          <p style="margin: 2px 0 0; font-size: 0.82rem; color: var(--text-secondary);">Low stock warning for B- and O- components in North Zone.</p>
-        </div>
+        ${sorted.length > 0 ? sorted.map(n => `
+          <div style="background: var(--bg-muted); padding: 12px; border-radius: var(--radius-md); border-left: 4px solid var(--accent);">
+            <strong style="color: var(--accent); font-size: 0.88rem;">${n.title || 'Notification'}</strong>
+            <p style="margin: 2px 0 0; font-size: 0.82rem; color: var(--text-secondary);">${n.message}</p>
+          </div>
+        `).join('') : `
+          <div style="background: var(--bg-muted); padding: 12px; border-radius: var(--radius-md); border-left: 4px solid var(--accent);">
+            <strong style="color: var(--accent); font-size: 0.88rem;">🚨 Emergency Request Broadcast</strong>
+            <p style="margin: 2px 0 0; font-size: 0.82rem; color: var(--text-secondary);">Urgent O+ Blood needed at Lilavati Hospital, Mumbai.</p>
+          </div>
+          <div style="background: var(--bg-muted); padding: 12px; border-radius: var(--radius-md); border-left: 4px solid #10b981;">
+            <strong style="color: #10b981; font-size: 0.88rem;">✅ Request Accepted</strong>
+            <p style="margin: 2px 0 0; font-size: 0.82rem; color: var(--text-secondary);">Apollo Blood Centre accepted Request #REQ-002.</p>
+          </div>
+          <div style="background: var(--bg-muted); padding: 12px; border-radius: var(--radius-md); border-left: 4px solid #3b82f6;">
+            <strong style="color: #3b82f6; font-size: 0.88rem;">📢 National Grid Alert</strong>
+            <p style="margin: 2px 0 0; font-size: 0.82rem; color: var(--text-secondary);">Low stock warning for B- and O- components in North Zone.</p>
+          </div>
+        `}
       </div>
     </div>
   `;

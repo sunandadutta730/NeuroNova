@@ -52,9 +52,8 @@ function requireUserAuth(actionCallback, actionName = 'continue') {
   return false;
 }
 
-function openAuthModal(mode = 'signup', role = 'user', customSubtext = null) {
+function openAuthModal(mode = 'login', role = 'user', customSubtext = null) {
   closeModal();
-  const isSignup = mode === 'signup';
 
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
@@ -65,11 +64,11 @@ function openAuthModal(mode = 'signup', role = 'user', customSubtext = null) {
           ${SVG_ICONS.droplet(28, '#ffffff')}
         </div>
         <h3 id="auth-modal-title" style="font-size: 1.45rem; font-weight: 800; color: var(--gray-900); margin: 0 0 6px;">
-          ${isSignup ? 'Create LifeLink Account' : 'Welcome Back'}
+          ${role === 'admin' ? 'Admin Control Gate 🔐' : 'Welcome Back'}
         </h3>
         ${customSubtext ? `<p style="font-size: 0.88rem; color: var(--accent); font-weight: 700; background: var(--red-50); padding: 6px 12px; border-radius: var(--radius-sm); margin: 0 0 8px;">${customSubtext}</p>` : ''}
         <p style="font-size: 0.88rem; color: var(--text-secondary); margin: 0;">
-          ${isSignup ? 'Join thousands of registered blood donors saving lives' : 'Sign in to manage your donor profile & requests'}
+          Sign in to manage your donor profile & requests
         </p>
       </div>
 
@@ -96,43 +95,21 @@ function openAuthModal(mode = 'signup', role = 'user', customSubtext = null) {
         </div>
       </div>
 
-      <form id="auth-form" onsubmit="${isSignup ? "handleAuthSignup(event, '" + role + "')" : "handleAuthLogin(event, '" + role + "')"}" style="text-align: left;">
-        ${isSignup ? `
-          <div class="form-group" style="text-align: left; margin-bottom: 10px;">
-            <label>Full Name <span class="required">*</span></label>
-            <input type="text" class="form-control" id="auth-name" placeholder="e.g. Rahul Sharma" required>
-          </div>
-        ` : ''}
-
+      <form id="auth-form" onsubmit="handleAuthLogin(event, '${role}')" style="text-align: left;">
         <div class="form-group" style="text-align: left; margin-bottom: 10px;">
           <label>Email Address <span class="required">*</span></label>
           <input type="email" class="form-control" id="auth-email" placeholder="name@example.com" required>
         </div>
 
-        ${isSignup ? `
-          <div class="form-group" style="text-align: left; margin-bottom: 10px;">
-            <label>Phone Number <span class="required">*</span></label>
-            <input type="tel" class="form-control" id="auth-phone" placeholder="10-digit mobile number" required maxlength="10" minlength="10" pattern="[0-9]{10}">
-          </div>
-        ` : ''}
-
         <div class="form-group" style="text-align: left; margin-bottom: 16px;">
           <label>${role === 'admin' ? 'Passcode / Password' : 'Password'} <span class="required">*</span></label>
           <input type="password" class="form-control" id="auth-password" placeholder="${role === 'admin' ? 'Enter admin passcode' : 'Minimum 6 characters'}" required minlength="${role === 'admin' ? '1' : '6'}">
-          ${isSignup ? `<div id="password-strength-indicator" style="margin-top: 5px; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); display: none;"></div>` : ''}
         </div>
 
         <button type="submit" class="btn btn-primary btn-lg glow-card" style="width: 100%; margin-top: 4px; font-size: 1rem;">
-          ${isSignup ? 'Create Account' : (role === 'admin' ? 'Sign In as Admin' : 'Sign In')}
+          ${role === 'admin' ? 'Sign In as Admin' : 'Sign In'}
         </button>
       </form>
-
-      <div style="margin-top: 20px; text-align: center; font-size: 0.85rem; color: var(--text-secondary);" id="auth-toggle-container">
-        ${isSignup
-          ? `Already have an account? <a href="#" onclick="switchAuthMode('login', '${role}'); return false;" style="color: var(--accent); font-weight:700;">Log In</a>`
-          : `Don't have an account? <a href="#" onclick="switchAuthMode('signup', '${role}'); return false;" style="color: var(--accent); font-weight:700;">Sign Up Free</a>`
-        }
-      </div>
 
       <button type="button" class="btn btn-outline btn-sm" onclick="closeModal()" style="width: 100%; margin-top: 14px; border-color: var(--gray-200); color: var(--gray-600);">Cancel</button>
     </div>

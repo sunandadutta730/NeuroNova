@@ -77,14 +77,7 @@ async function handleRegister(e) {
           phone: phone,
           blood: blood,
           city: city,
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
           age: age,
->>>>>>> f7eadcb (feat: implement core authentication system and secure Firestore rules with owner-based access control)
-=======
-          age: age,
->>>>>>> d2d5e3ee395ad8831233b6a7ab4f13b1c762d4d3
           role: 'donor'
         });
         console.log('✅ Updated existing user account to donor role:', userId);
@@ -342,9 +335,7 @@ function renderDonorCards(donors, container) {
         <div class="donor-detail">
           ${SVG_ICONS.mapPin(16, 'var(--gray-400)')} ${d.city}
         </div>
-        <div class="donor-detail">
-          ${SVG_ICONS.phone(16, 'var(--gray-400)')} ${d.phone}
-        </div>
+
         <div class="donor-detail">
           ${SVG_ICONS.droplet(16, 'var(--gray-400)')} ${d.donations || 0} Total Donations
         </div>

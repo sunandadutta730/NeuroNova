@@ -385,17 +385,21 @@ function renderDashboard() {
                 <h3>Live Network Broadcast Notifications</h3>
               </div>
               <div class="db-alerts-list">
-                ${notificationsList.length > 0 ? notificationsList.map(n => `
-                  <div class="db-alert-item db-alert-critical">
-                    <span class="db-alert-dot db-dot-critical"></span>
-                    <span class="db-alert-text"><strong>${n.title || 'Notification'}:</strong> ${n.message}</span>
-                  </div>
-                `).join('') : `
-                  <div class="db-alert-item db-alert-warning">
-                    <span class="db-alert-dot db-dot-warning"></span>
-                    <span class="db-alert-text">AB- and O- blood units running low across regional blood banks</span>
-                  </div>
-                `}
+                ${(() => {
+                  const sorted = [...notificationsList].sort((a, b) => new Date(b.timestamp || b.createdAt || b.registeredAt || 0) - new Date(a.timestamp || a.createdAt || a.registeredAt || 0));
+                  const latest = sorted.slice(0, 5);
+                  return latest.length > 0 ? latest.map(n => `
+                    <div class="db-alert-item db-alert-critical">
+                      <span class="db-alert-dot db-dot-critical"></span>
+                      <span class="db-alert-text"><strong>${n.title || 'Notification'}:</strong> ${n.message}</span>
+                    </div>
+                  `).join('') : `
+                    <div class="db-alert-item db-alert-warning">
+                      <span class="db-alert-dot db-dot-warning"></span>
+                      <span class="db-alert-text">AB- and O- blood units running low across regional blood banks</span>
+                    </div>
+                  `;
+                })()}
               </div>
             </div>
           </div>
