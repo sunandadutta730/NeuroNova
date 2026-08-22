@@ -74,7 +74,7 @@ function renderAdmin() {
           </div>
 
           <div class="admin-stat-card">
-            <div class="admin-stat-icon purple">🤝</div>
+            <div class="admin-stat-icon purple">${SVG_ICONS.handshake(24, '#8b5cf6')}</div>
             <div>
               <div class="admin-stat-val">${totalNgos}</div>
               <div class="admin-stat-label">Registered NGO Partners</div>
@@ -82,7 +82,7 @@ function renderAdmin() {
           </div>
 
           <div class="admin-stat-card">
-            <div class="admin-stat-icon red">🩸</div>
+            <div class="admin-stat-icon red">${SVG_ICONS.droplet(24, 'var(--accent)')}</div>
             <div>
               <div class="admin-stat-val">${totalContractDonors}</div>
               <div class="admin-stat-label">Contract Donors</div>
@@ -90,7 +90,7 @@ function renderAdmin() {
           </div>
 
           <div class="admin-stat-card">
-            <div class="admin-stat-icon amber">🎪</div>
+            <div class="admin-stat-icon amber">${SVG_ICONS.camp(24, 'var(--warning)')}</div>
             <div>
               <div class="admin-stat-val">${totalCamps}</div>
               <div class="admin-stat-label">Collection Camps</div>

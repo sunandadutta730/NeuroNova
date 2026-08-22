@@ -139,8 +139,8 @@ function showModal(title, bodyHtml, actions = []) {
     <div class="modal">
       <h3>${title}</h3>
       <div>${bodyHtml}</div>
-      <div class="modal-actions" style="margin-top:20px;">
-        ${actions.map((a, i) => `<button class="btn ${a.class}" id="modal-btn-${i}">${a.text}</button>`).join('')}
+      <div class="modal-actions" style="margin-top: 24px; display: flex; align-items: center; justify-content: center; gap: 16px; width: 100%;">
+        ${actions.map((a, i) => `<button class="btn ${a.class}" id="modal-btn-${i}" style="min-width: 120px; text-align: center; font-weight: 700; margin: 0;">${a.text}</button>`).join('')}
       </div>
     </div>
   `;

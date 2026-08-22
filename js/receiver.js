@@ -76,6 +76,11 @@ async function handleEmergencyRequest(e) {
     }
   }
 
+  // Add to local list immediately for instant UI response
+  if (!emergencyRequestsList.some(r => r.id === newReq.id)) {
+    emergencyRequestsList.unshift(newReq);
+  }
+
   showToast('🚨 Emergency request broadcasted across all Blood Banks!', 'success');
   navigateTo('emergency');
 }
@@ -198,43 +203,53 @@ function renderEmergency() {
 
           <!-- Active Requests Sidebar -->
           <div>
-            <h3 style="font-size: 1.2rem; font-weight: 800; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
-              ${SVG_ICONS.activity(20, 'var(--red-600)')} Live Emergency Feed
+            <h3 style="font-size: 1.2rem; font-weight: 800; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;">
+              <span style="display: flex; align-items: center; gap: 8px;">
+                ${SVG_ICONS.activity(20, 'var(--red-600)')} Live Emergency Feed
+              </span>
+              <span class="badge badge-accent" style="font-weight: 700;">Latest 5</span>
             </h3>
             <div style="display: flex; flex-direction: column; gap: 14px;">
-              ${emergencyRequestsList.map(r => `
-                <div class="card glow-card" style="padding: 18px; border-left: 4px solid ${r.urgency === 'critical' ? 'var(--critical)' : 'var(--warning)'};">
-                  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-                    <div>
-                      <span class="badge badge-blue" style="font-size: 0.75rem;">${r.id}</span>
-                      <strong style="font-size: 1.05rem; display: block; margin-top: 2px;">${r.patient || r.patientName}</strong>
-                      <span style="font-size: 0.82rem; color: var(--text-secondary);">${r.hospital || r.hospitalName}, ${r.city}</span>
+              ${(() => {
+                const sorted = [...emergencyRequestsList].sort((a, b) => new Date(b.createdAt || b.timestamp || 0) - new Date(a.createdAt || a.timestamp || 0));
+                const latest = sorted.slice(0, 5);
+                if (latest.length === 0) {
+                  return `<div class="card" style="padding: 20px; text-align: center; color: var(--text-secondary);">No active emergency requests at this moment.</div>`;
+                }
+                return latest.map(r => `
+                  <div class="card glow-card" style="padding: 18px; border-left: 4px solid ${r.urgency === 'critical' ? 'var(--critical)' : 'var(--warning)'};">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                      <div>
+                        <span class="badge badge-blue" style="font-size: 0.75rem;">${r.id}</span>
+                        <strong style="font-size: 1.05rem; display: block; margin-top: 2px;">${r.patient || r.patientName}</strong>
+                        <span style="font-size: 0.82rem; color: var(--text-secondary);">${r.hospital || r.hospitalName}, ${r.city}</span>
+                      </div>
+                      <span class="blood-badge" style="font-size: 1rem;">${r.blood || r.bloodGroup}</span>
                     </div>
-                    <span class="blood-badge" style="font-size: 1rem;">${r.blood || r.bloodGroup}</span>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin: 8px 0; font-size: 0.82rem;">
+                      <span>Needed: <strong>${r.units} Units</strong></span>
+                      <span class="badge ${r.status === 'COMPLETED' ? 'badge-green' : (r.status === 'ACCEPTED' ? 'badge-blue' : 'badge-amber')}">${r.status || 'PENDING'}</span>
+                    </div>
+
+                    ${r.acceptedBy ? `
+                      <div style="font-size: 0.78rem; background: var(--bg-muted); padding: 6px 8px; border-radius: var(--radius-sm); margin-bottom: 8px;">
+                        🏥 Accepted by: <strong>${r.acceptedBy.bankName}</strong>
+                      </div>
+                    ` : ''}
+
+                    ${r.status !== 'COMPLETED' ? `
+                      <button class="btn btn-outline btn-sm" style="width: 100%; font-weight: 700; border-color: #10b981; color: #10b981;" onclick="confirmPatientReceipt('${r.id}')">
+                        ✔️ Patient / Hospital Confirm Delivery
+                      </button>
+                    ` : `
+                      <div class="badge badge-green" style="width: 100%; text-align: center; padding: 6px;">
+                        ✅ DOUBLE CONFIRMED & CLOSED
+                      </div>
+                    `}
                   </div>
-
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin: 8px 0; font-size: 0.82rem;">
-                    <span>Needed: <strong>${r.units} Units</strong></span>
-                    <span class="badge ${r.status === 'COMPLETED' ? 'badge-green' : (r.status === 'ACCEPTED' ? 'badge-blue' : 'badge-amber')}">${r.status || 'PENDING'}</span>
-                  </div>
-
-                  ${r.acceptedBy ? `
-                    <div style="font-size: 0.78rem; background: var(--bg-muted); padding: 6px 8px; border-radius: var(--radius-sm); margin-bottom: 8px;">
-                      🏥 Accepted by: <strong>${r.acceptedBy.bankName}</strong>
-                    </div>
-                  ` : ''}
-
-                  ${r.status !== 'COMPLETED' ? `
-                    <button class="btn btn-outline btn-sm" style="width: 100%; font-weight: 700; border-color: #10b981; color: #10b981;" onclick="confirmPatientReceipt('${r.id}')">
-                      ✔️ Patient / Hospital Confirm Delivery
-                    </button>
-                  ` : `
-                    <div class="badge badge-green" style="width: 100%; text-align: center; padding: 6px;">
-                      ✅ DOUBLE CONFIRMED & CLOSED
-                    </div>
-                  `}
-                </div>
-              `).join('')}
+                `).join('');
+              })()}
             </div>
           </div>
         </div>

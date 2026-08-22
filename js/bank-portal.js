@@ -74,8 +74,8 @@ function renderBloodBankPortal() {
           <button class="bank-nav-tab ${activeBankTab === 'inventory' ? 'active' : ''}" onclick="switchBankTab('inventory')">🩸 Inventory (${bank.units || 120} Units)</button>
           <button class="bank-nav-tab ${activeBankTab === 'requests' ? 'active' : ''}" onclick="switchBankTab('requests')">🚨 Emergency Requests <span class="badge badge-red" style="padding: 2px 6px;">${pendingRequestsCount}</span></button>
           <button class="bank-nav-tab ${activeBankTab === 'contract-donors' ? 'active' : ''}" onclick="switchBankTab('contract-donors')">👥 Contract Donors (${contractDonorsList.length})</button>
-          <button class="bank-nav-tab ${activeBankTab === 'camps' ? 'active' : ''}" onclick="switchBankTab('camps')">⛺ Blood Camps (${bloodCollectionCampsList.length})</button>
-          <button class="bank-nav-tab ${activeBankTab === 'ngo-partners' ? 'active' : ''}" onclick="switchBankTab('ngo-partners')">🤝 NGO Partners (${ngoPartnersList.length})</button>
+          <button class="bank-nav-tab ${activeBankTab === 'camps' ? 'active' : ''}" onclick="switchBankTab('camps')">${SVG_ICONS.camp(15)} Blood Camps (${bloodCollectionCampsList.length})</button>
+          <button class="bank-nav-tab ${activeBankTab === 'ngo-partners' ? 'active' : ''}" onclick="switchBankTab('ngo-partners')">${SVG_ICONS.handshake(15)} NGO Partners (${ngoPartnersList.length})</button>
           <button class="bank-nav-tab ${activeBankTab === 'history' ? 'active' : ''}" onclick="switchBankTab('history')">📋 Bag Tracking</button>
           <button class="bank-nav-tab ${activeBankTab === 'reports' ? 'active' : ''}" onclick="switchBankTab('reports')">📈 Usage Reports</button>
           <button class="bank-nav-tab ${activeBankTab === 'settings' ? 'active' : ''}" onclick="switchBankTab('settings')">⚙️ Settings</button>

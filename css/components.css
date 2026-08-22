@@ -283,6 +283,19 @@
 }
 .modal-overlay.active .modal { transform: scale(1); }
 
+.modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 24px;
+  width: 100%;
+}
+.modal-actions .btn {
+  min-width: 120px;
+  text-align: center;
+}
+
 /* ===== TOAST NOTIFICATION ===== */
 .toast-container {
   position: fixed;
