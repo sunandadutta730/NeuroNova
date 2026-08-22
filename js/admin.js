@@ -33,7 +33,7 @@ function renderAdmin() {
     <div class="page-header" style="background: linear-gradient(180deg, #1f2937 0%, #111827 100%); color: #fff;">
       <div class="container">
         <h1 style="color: #fff;">${SVG_ICONS.shield(32, '#ef4444')} Admin Control Center</h1>
-        <p style="color: #9ca3af;">Manage donor registries, emergency requests, stock inventories, and network alerts.</p>
+        <p style="color: #9ca3af;">Manage donor registries, emergency requests, and stock inventories.</p>
       </div>
     </div>
 
@@ -104,7 +104,6 @@ function renderAdmin() {
             <button class="admin-tab ${activeAdminTab === 'donors' ? 'active' : ''}" onclick="switchAdminTab('donors')">Registered Donors (${registeredDonors.length})</button>
             <button class="admin-tab ${activeAdminTab === 'requests' ? 'active' : ''}" onclick="switchAdminTab('requests')">Emergency Feed (${emergencyRequestsList.length})</button>
             <button class="admin-tab ${activeAdminTab === 'banks' ? 'active' : ''}" onclick="switchAdminTab('banks')">Blood Banks Stock (${BLOOD_BANKS.length})</button>
-            <button class="admin-tab ${activeAdminTab === 'alerts' ? 'active' : ''}" onclick="switchAdminTab('alerts')">Broadcast Alert</button>
           </div>
         </div>
 
@@ -243,30 +242,6 @@ function renderAdminTabBody() {
     `;
   }
 
-  if (activeAdminTab === 'alerts') {
-    return `
-      <div class="form-card animate-on-scroll" style="max-width: 600px; margin: 0;">
-        <h3 style="font-size: 1.3rem; font-weight: 800; margin-bottom: 8px;">Broadcast Network Alert</h3>
-        <p class="subtitle" style="margin-bottom: 20px;">Publish shortage warnings to all user dashboards.</p>
-        <form onsubmit="publishAlert(event)">
-          <div class="form-group" style="margin-bottom: 16px;">
-            <label>Alert Severity Level</label>
-            <select class="form-control" id="alert-type" required>
-              <option value="critical">Critical Red Shortage</option>
-              <option value="warning">Amber Low Stock Warning</option>
-            </select>
-          </div>
-          <div class="form-group" style="margin-bottom: 20px;">
-            <label>Alert Announcement Message</label>
-            <input type="text" class="form-control" id="alert-text" placeholder="e.g. Critical O- blood shortage in Mumbai hospitals" required>
-          </div>
-          <button type="submit" class="btn btn-primary glow-card" style="width: 100%;">
-            ${SVG_ICONS.siren(18)} Publish Network Broadcast
-          </button>
-        </form>
-      </div>
-    `;
-  }
 
   return '';
 }
@@ -390,26 +365,3 @@ function openAdminTimelineModal(reqId) {
   ]);
 }
 
-async function publishAlert(e) {
-  e.preventDefault();
-  const type = document.getElementById('alert-type').value;
-  const text = document.getElementById('alert-text').value.trim();
-
-  if (text && typeof db !== 'undefined' && db) {
-    try {
-      await db.collection('notifications').add({
-        targetRole: 'all',
-        title: type === 'critical' ? '🚨 CRITICAL NETWORK ALERT' : '⚠️ AMBER SHORTAGE WARNING',
-        message: text,
-        type: 'SYSTEM_ALERT',
-        timestamp: new Date().toISOString(),
-        read: false
-      });
-      showToast('🚨 Alert published to platform notifications collection in Firestore!', 'success');
-      document.getElementById('alert-text').value = '';
-      switchAdminTab('requests');
-    } catch (err) {
-      console.error('Publish alert error:', err);
-    }
-  }
-}

@@ -29,7 +29,6 @@ This document describes the client-side API functions and module interfaces used
 * `adminToggleDonorStatus(index)` — Toggles donor availability status and syncs update to Firestore.
 * `adminUpdateReqStatus(index, newStatus)` — Updates emergency request status (`In Progress`, `Resolved`).
 * `adminUpdateStock(index, delta)` — Increments or decrements blood bank unit stock.
-* `publishAlert(e)` — Publishes high-priority shortage alert to platform dashboards.
 
 ### 6. Cloud Backend & Utilities (`js/firebase.js`, `js/utils.js`)
 * `initFirebaseBackend()` — Connects to Firebase Firestore and initializes realtime snapshot listeners.
